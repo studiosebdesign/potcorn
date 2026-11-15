@@ -218,7 +218,8 @@ export async function onRequestGet({ request, env }) {
 
   if (store && !debug) {
     const c = await store.get(key).catch(() => null);
-    if (c && c.expires > now.getTime()) return json({ ...c, fromCache: true });
+    // une mémoire enregistrée sans bandes-annonces est ignorée dès que la clé TMDB est ajoutée
+    if (c && c.expires > now.getTime() && (!env.TMDB_TOKEN || c.tmdb)) return json({ ...c, fromCache: true });
   }
 
   try {
@@ -245,7 +246,7 @@ export async function onRequestGet({ request, env }) {
     const token = env.TMDB_TOKEN;
     if (token && films.length) films = await enrich(films, token, kvStore(env, 'tmdb-'));
     const theater = days.flatMap(x => x.pages).find(p => p?.theater?.name)?.theater?.name || null;
-    const payload = { cinema: id, theater, fetchedAt: now.toISOString(), expires: computeExpiry(now, films), films };
+    const payload = { cinema: id, theater, fetchedAt: now.toISOString(), expires: computeExpiry(now, films), tmdb: !!token, films };
     // gardé en mémoire 7 jours de plus que sa validité, pour servir de secours si AlloCiné ne répond pas
     if (store) await store.setJSON(key, payload, (payload.expires - now.getTime()) / 1000 + 7 * 86400).catch(() => {});
     return json(payload);
