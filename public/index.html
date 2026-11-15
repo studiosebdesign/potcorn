@@ -252,6 +252,7 @@ async function loadCinema(id, force) {
     const j = await r.json().catch(() => ({}));
     if (!r.ok || j.error) throw new Error(j.error || 'Erreur ' + r.status);
     DATA[id] = { status: 'ok', films: j.films || [], stale: !!j.stale };
+    if (j.pending) completeTrailers(id, 0);
   } catch (e) {
     DATA[id] = { status: 'error', error: e.message };
   }
@@ -262,6 +263,20 @@ async function loadCinema(id, force) {
   }
   S.autoDone = true;
   render();
+}
+/* Les bandes-annonces sont cherchées par petits paquets côté serveur :
+   tant qu'il en manque, on redemande (6 fois au plus) et on met les cartes à jour. */
+async function completeTrailers(id, n) {
+  if (n >= 6) return;
+  await new Promise(r => setTimeout(r, 700));
+  try {
+    const j = await fetch(`${API}?cinema=${encodeURIComponent(id)}`).then(r => r.json());
+    if (j && Array.isArray(j.films) && DATA[id] && DATA[id].status === 'ok') {
+      DATA[id].films = j.films;
+      if (S.cin === id && !S.playing && !S.sheet && !document.querySelector('.vid')) render();
+      if (j.pending) completeTrailers(id, n + 1);
+    }
+  } catch (e) {}
 }
 function filmsFor() {
   const D = DATA[S.cin]; if (!D || D.status !== 'ok') return [];
