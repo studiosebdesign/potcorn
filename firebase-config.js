@@ -10,4 +10,12 @@
    site quel projet Firebase utiliser. La protection vient des règles
    Firestore et des domaines autorisés.
    ===================================================================== */
-const firebaseConfig = null;
+const firebaseConfig = {
+  apiKey: "AIzaSyB721WlQnZcDlwji_5FqTb5UXIbhiYLNVI",
+  authDomain: "potcorn.firebaseapp.com",
+  projectId: "potcorn",
+  storageBucket: "potcorn.firebasestorage.app",
+  messagingSenderId: "1083825272670",
+  appId: "1:1083825272670:web:342d0f4bd55772ac1681cf",
+  measurementId: "G-35X55FTC53"
+};
