@@ -28,8 +28,12 @@ a{color:var(--or)}
 .selbtn{flex:none;width:50px;border:0;border-radius:50%;background:var(--ink2);color:#fff;position:relative;display:flex;align-items:center;justify-content:center}
 .count{position:absolute;top:-3px;right:-3px;background:var(--or);color:var(--ink);font-size:11px;font-weight:800;min-width:19px;height:19px;padding:0 4px;border-radius:10px;display:flex;align-items:center;justify-content:center}
 .stage{position:relative;display:flex;justify-content:center;min-height:500px}
-.card{position:absolute;top:0;width:min(340px,100%);background:var(--cream);color:var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.45);touch-action:pan-y;user-select:none;-webkit-user-select:none;transition:transform .25s ease}
+.card{position:absolute;top:0;width:min(340px,100%);background:var(--cream);color:var(--ink);border-radius:20px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.45);touch-action:none;user-select:none;-webkit-user-select:none;transition:transform .25s ease}
 .card.behind{transform:scale(.94) translateY(16px);filter:brightness(.65);pointer-events:none}
+/* La carte du dessus donne sa hauteur à la zone ; celle de dessous est coupée à la même hauteur */
+.card.front{position:relative}
+.card.behind{bottom:0}
+.stage.cards{min-height:0;margin-bottom:14px}
 .chead{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;background:var(--ink);color:var(--cream);font-family:'Rubik Mono One',sans-serif;font-size:11px}
 .badge{font-family:Inter,sans-serif;font-size:10px;font-weight:800;letter-spacing:.06em;background:var(--or);color:var(--ink);padding:3px 7px;border-radius:4px}
 .media{position:relative;aspect-ratio:16/10;background:#000;cursor:pointer}
@@ -145,7 +149,6 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .av{width:26px;height:26px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:var(--ink)}
 .gbody{display:flex;flex-direction:column;gap:12px}
 .gprog{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;color:var(--muted)}
-.card.gcard{touch-action:none}
 .stamp.coeur{left:50%;top:70px;color:var(--or);transform:translateX(-50%) rotate(-4deg);white-space:nowrap;font-size:20px}
 .actions.g4{gap:16px}
 .rb.coeur{width:56px;height:56px;border:0;background:var(--or);color:var(--ink)}
@@ -175,6 +178,22 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .roul{position:fixed;inset:0;z-index:45;background:rgba(27,27,27,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
 .roul .rt{font-family:'Rubik Mono One',sans-serif;font-size:24px;line-height:1.2;color:var(--cream);min-height:3.6em;display:flex;align-items:center;justify-content:center;max-width:420px}
 .roul .rt.win{color:var(--or);animation:pop .45s ease}
+.under{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:-4px}
+.linkbtn.soft{color:#bbb;text-decoration:none;display:flex;align-items:center;gap:6px}
+.linkbtn:disabled{opacity:.3}
+.hint .or{color:var(--or);font-weight:700}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.others{margin:6px 14px 0;background:#DDF3EF;color:#0F4F47;font-size:12px;font-weight:700;border-radius:8px;padding:6px 9px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.mheart{font-size:11px;font-weight:700;color:var(--or);white-space:nowrap}
+/* Animation d'aide : la carte montre qu'on peut la glisser à gauche, à droite et vers le haut */
+.card.front.nudge{animation:nudge 2.8s ease-in-out}
+.card.nudge .stamp.nope{animation:stN 2.8s ease-in-out}
+.card.nudge .stamp.keep{animation:stK 2.8s ease-in-out}
+.card.nudge .stamp.coeur{animation:stC 2.8s ease-in-out}
+@keyframes nudge{0%,26%,54%,86%,100%{transform:none}12%{transform:translateX(-56px) rotate(-6deg)}40%{transform:translateX(56px) rotate(6deg)}70%{transform:translateY(-28px)}}
+@keyframes stN{0%,26%,100%{opacity:0}12%{opacity:.9}}
+@keyframes stK{0%,26%,54%,100%{opacity:0}40%{opacity:.9}}
+@keyframes stC{0%,54%,86%,100%{opacity:0}70%{opacity:.9}}
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 </style>
 </head>
@@ -330,6 +349,11 @@ function filmsFor() {
   const di = iso(DAYS[S.day]); const m = hourMin();
   return D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length);
 }
+function filmsOfDay() {
+  const D = DATA[S.cin]; if (!D || D.status !== 'ok') return [];
+  const di = iso(DAYS[S.day]), m = S.day === 0 ? nowMin() : 0;
+  return D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length);
+}
 function isNew(f, day = DAYS[S.day]) {
   const sd = String(f.sortie || '').slice(0, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(sd)) return false;
   const diff = (day - new Date(sd + 'T00:00:00')) / 86400000;
@@ -366,7 +390,7 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
   return `<article class="card ${isTop ? 'front' : 'behind'}${ctx.group ? ' gcard' : ''}" data-id="${esc(f.id)}" aria-label="${esc(f.t)}">
     <div class="chead"><span>N° ${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>${f.s.some(x => x.ap) ? '<span class="badge">AVANT-PREMIÈRE</span>' : isNew(f, ctx.date) ? '<span class="badge">SORTIE DE LA SEMAINE</span>' : ''}</div>
     <div class="media" role="button" aria-label="${f.yt ? 'Lire la bande-annonce' : 'Affiche'}">${media}</div>
-    <div class="ctitle">${esc(f.t)}</div>
+    <div class="ctitle">${esc(f.t)}</div>${ctx.others ? ctx.others(f) : ''}
     <div class="stats">
       <div class="stat dur"><small>DURÉE</small><b>${f.d ? fmtDur(f.d) : '—'}</b></div>
       <div class="stat"><small>GENRE</small><b>${esc(f.g || '—')}</b></div>
@@ -377,7 +401,7 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
       return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${x.h}">${label}</a>` : `<span class="chip">${label}</span>`;
     }).join('')}
       <a class="allo" href="${allo}" target="_blank" rel="noopener">AlloCiné ›</a></div>
-    <div class="stamp keep">JE GARDE</div><div class="stamp nope">NON MERCI</div>${ctx.group ? '<div class="stamp coeur">COUP DE CŒUR</div>' : ''}
+    <div class="stamp keep">JE GARDE</div><div class="stamp nope">NON MERCI</div><div class="stamp coeur">COUP DE CŒUR</div>
   </article>`;
 }
 function renderDeck() {
@@ -403,22 +427,47 @@ function renderDeck() {
       <button class="ghost" data-act="reset">Tout recommencer</button></div>`;
   } else {
     const top = deck[0], next = deck[1];
-    const num = all.indexOf(top) + 1;
-    stage = (next ? cardHTML(next, all.indexOf(next) + 1, all.length, false) : '') + cardHTML(top, num, all.length, true);
+    const num = all.length - deck.length + 1;
+    stage = (next ? cardHTML(next, num + 1, all.length, false) : '') + cardHTML(top, num, all.length, true);
   }
-  $app.innerHTML = topBar(keptN) + `<div class="stage">${stage}</div>` +
-    (deck.length ? `<div class="actions">
-      <button class="rb nope" data-act="decide" data-v="nope" aria-label="Éliminer ce film">${ICON.x}</button>
-      <button class="rb undo" data-act="undo" aria-label="Annuler le dernier choix" ${L.hist.length ? '' : 'disabled'}>${ICON.undo}</button>
-      <button class="rb keep" data-act="decide" data-v="keep" aria-label="Garder ce film">${ICON.ok}</button></div>
-      <div class="hint">← glisser pour éliminer · glisser pour garder →<br>Toucher l'image pour la bande-annonce</div>` : '') +
+  $app.innerHTML = topBar(keptN) + `<div class="stage${deck.length ? ' cards' : ''}">${stage}</div>` +
+    (deck.length ? underBar(L.hist.length > 0, 'undo', 'finish', keptN ? 'J’ai fini, voir ma sélection' : 'J’ai fini') : '') +
     (all.length ? `<button class="gbtn" data-act="sheet" data-v="group">${ICON.group} Choisir entre potes</button>` : '') + CREDIT + sheetHTML();
   const el = document.querySelector('.card.front');
   if (el) attachSwipe(el, {
-    onDecide: decide,
+    up: true, onDecide: decide,
     onTap: id => { const f = filmsFor().find(x => x.id === id); if (f && f.yt) { S.playing = f.id; render(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
   });
+  armNudge();
 }
+/* Sous la carte : pas de gros boutons (on glisse), juste « Annuler » et « J'ai fini ».
+   Les boutons de choix restent présents mais invisibles, pour les lecteurs d'écran. */
+function underBar(canUndo, undoAct, finishAct, finishLabel) {
+  const dAct = undoAct === 'gundo' ? 'gdecide' : 'decide';
+  return `<div class="under">
+      <button class="linkbtn soft" data-act="${undoAct}" ${canUndo ? '' : 'disabled'}>${ICON.undo} Annuler</button>
+      <button class="linkbtn" data-act="${finishAct}">${finishLabel} ›</button></div>
+    <div class="hint">← non merci · <span class="or">↑ coup de cœur</span> · je garde →<br>Touche l'image pour la bande-annonce</div>
+    <div class="sr">
+      <button data-act="${dAct}" data-v="nope">Éliminer ce film</button>
+      <button data-act="${dAct}" data-v="coeur">Coup de cœur pour ce film</button>
+      <button data-act="${dAct}" data-v="keep">Garder ce film</button></div>`;
+}
+/* Animation d'aide : si on ne touche à rien, la carte se balance pour montrer qu'on peut la glisser */
+let _nudgeT = null, _swipes = 0;
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function armNudge() {
+  clearTimeout(_nudgeT);
+  _nudgeT = setTimeout(nudge, _swipes < 2 ? 2500 : 9000);
+}
+function nudge() {
+  const el = document.querySelector('.card.front');
+  if (!el) return;
+  if (reduceMotion() || el.dataset.flying || el.querySelector('iframe') || document.querySelector('.sheet, .vid, .roul')) return armNudge();
+  el.classList.remove('nudge'); void el.offsetWidth; el.classList.add('nudge');
+  el.addEventListener('animationend', () => { el.classList.remove('nudge'); armNudge(); }, { once: true });
+}
+document.addEventListener('pointerdown', () => { document.querySelector('.card.nudge')?.classList.remove('nudge'); armNudge(); }, true);
 
 /* ---------- Glisser la carte ----------
    opt.onDecide('keep' | 'nope' | 'coeur'), opt.onTap(id), opt.up = glisser vers le haut autorisé (coup de cœur) */
@@ -430,7 +479,7 @@ function attachSwipe(el, opt) {
   el.addEventListener('pointerdown', e => {
     if (e.target.closest('a,button,iframe')) return;
     down = true; dx = dy = 0; x0 = e.clientX; y0 = e.clientY;
-    onMedia = !!e.target.closest('.media');
+    onMedia = !!e.target.closest('.media'); el.classList.remove('nudge');
     el.style.transition = 'none';
     try { el.setPointerCapture(e.pointerId); } catch (_) {}
   });
@@ -468,9 +517,13 @@ function flyOut(dir, cb) {
 }
 function decide(dir) {
   flyOut(dir, id => {
-    const L = getList();
+    const L = getList(); _swipes++;
     L.kept = L.kept.filter(x => x !== id); L.removed = L.removed.filter(x => x !== id);
-    (dir === 'keep' ? L.kept : L.removed).push(id); L.hist.push(id);
+    (dir === 'nope' ? L.removed : L.kept).push(id); L.hist.push(id);
+    if (dir === 'coeur') {
+      if (L.coeur && L.coeur !== id) toast('Ton coup de cœur passe sur ce film (un seul possible)');
+      L.coeur = id;
+    }
     saveList(L); S.playing = null;
     // Dernière carte passée : on affiche directement la sélection (s'il y a au moins un film gardé)
     const all = filmsFor();
@@ -483,6 +536,7 @@ function decide(dir) {
 function undo() {
   const L = getList(); const id = L.hist.pop(); if (!id) return;
   L.kept = L.kept.filter(x => x !== id); L.removed = L.removed.filter(x => x !== id);
+  if (L.coeur === id) L.coeur = null;
   saveList(L); S.playing = null; render();
 }
 
@@ -497,7 +551,7 @@ function renderSel() {
     ${films.length ? `<div class="grid">${films.map(f => `<div class="mini">
         <button class="rm" data-act="unkeep" data-v="${esc(f.id)}" aria-label="Retirer ${esc(f.t)}">${ICON.xs}</button>
         ${f.yt ? `<button class="thumb" data-act="video" data-v="${esc(f.yt)}" aria-label="Bande-annonce de ${esc(f.t)}"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><span>${ICON.play}</span></button>` : `<div class="thumb"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"></div>`}
-        <div class="t">${esc(f.t)}</div><div class="d">${fmtDur(f.d)}</div><div class="s">${seaTxt(f)}</div></div>`).join('')}</div>`
+        <div class="t">${esc(f.t)}</div><div class="d">${fmtDur(f.d)}${f.id === L.coeur ? ` <span class="mheart">${ICON.hs} coup de cœur</span>` : ''}</div><div class="s">${seaTxt(f)}</div></div>`).join('')}</div>`
       : `<div class="empty"><h2>Rien pour l'instant</h2><p>Glisse des cartes vers la droite pour les garder.</p><button class="big cream" data-act="go" data-v="deck">Voir les cartes</button></div>`}
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
       ${films.length ? `<button class="big or" data-act="sheet" data-v="group">${ICON.group} Choisir entre potes</button>
@@ -531,25 +585,20 @@ function sheetHTML() {
       <p class="note" style="margin-top:10px">Tes potes verront ta sélection et les bandes-annonces. Pour choisir le film tous ensemble, utilise plutôt « Choisir entre potes ».</p>
       <button class="big ink" id="f-send" data-act="share">${ICON.send} Ouvrir WhatsApp</button>`;
   } else if (S.sheet === 'group') {
-    const sel = keptFilms(), all = filmsFor();
-    if (S.gFilms !== 'sel' && S.gFilms !== 'all') S.gFilms = sel.length >= 2 ? 'sel' : 'all';
-    if (!sel.length) S.gFilms = 'all';
-    const n = S.gFilms === 'sel' ? sel.length : all.length;
+    const n = filmsOfDay().length, L = getList(), mine = L.kept.length + L.removed.length;
     body = `<h2>Choisir entre potes</h2>
       <p class="note">Chacun choisit ses films de son côté, sur son téléphone, sans créer de compte. Pot’corn trouve le film qui met tout le monde d’accord.</p>
-      <div class="recap"><b>${esc(cin().name)}</b><br>${esc(dayLong(S.day).replace(/^./, c => c.toUpperCase()))} · ${esc(hourText())}</div>
-      ${sel.length ? `<div class="lbl">FILMS À DÉPARTAGER</div>
-        <button class="opt ${S.gFilms === 'sel' ? 'on' : ''}" data-act="gfilms" data-v="sel"><span>Seulement ma sélection</span><small>${sel.length} film${sel.length > 1 ? 's' : ''}</small></button>
-        <button class="opt ${S.gFilms === 'all' ? 'on' : ''}" data-act="gfilms" data-v="all"><span>Tous les films</span><small>${all.length} film${all.length > 1 ? 's' : ''}</small></button>` : ''}
+      <div class="recap"><b>${esc(cin().name)}</b><br>${esc(dayLong(S.day).replace(/^./, c => c.toUpperCase()))} · ${n} film${n > 1 ? 's' : ''} à l’affiche</div>
       <label class="field">Ton prénom<input id="f-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(S.prenom)}" placeholder="Ex. : Seb"></label>
       <ol class="how">
         <li>Tu invites tes potes sur WhatsApp.</li>
-        <li>Chacun dit à partir de quelle heure il est dispo, puis garde ou élimine les ${n} films.</li>
+        <li>Chacun choisit à partir de quelle heure il est dispo, puis garde ou élimine les films, comme toi. Sur chaque carte, il voit qui l’a déjà gardé.</li>
         <li>Un coup de cœur par personne (glisser vers le haut) : il compte double.</li>
         <li>Pot’corn montre les films en commun et les séances qui vont à tout le monde. En cas d’égalité, la roulette tranche, et toi tu valides le choix final.</li>
       </ol>
+      ${mine ? `<p class="note">Tes choix déjà faits (${esc(hourText())}) sont repris : tu n’as pas à recommencer.</p>` : ''}
       ${!FIREBASE_CONFIG ? `<p class="note"><b>Bientôt disponible :</b> ce mode s’activera dès que Firebase sera branché sur le site.</p>`
-        : !n ? `<p class="note">Aucun film à proposer sur ce créneau.</p>`
+        : !n ? `<p class="note">Aucune séance à proposer ce jour-là.</p>`
         : `<button class="big ink" data-act="gcreate">${ICON.group} Créer la séance</button>`}
       ${lastGroupLink('linkbtn')}`;
   }
@@ -558,13 +607,13 @@ function sheetHTML() {
 function payload() {
   return {
     auteur: S.prenom.trim(), mot: S.mot.trim(), cinema: cin().name, jour: dayLong(S.day), jourISO: iso(DAYS[S.day]), heure: hourText(),
-    films: keptFilms().map(f => ({ id: f.id, t: f.t, d: f.d, g: f.g, yt: f.yt || null, img: anyImg(f) || null, s: f.s.map(x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : '')) }))
+    films: keptFilms().map(f => ({ id: f.id, t: f.t, d: f.d, g: f.g, c: f.id === getList().coeur, yt: f.yt || null, img: anyImg(f) || null, s: f.s.map(lab) }))
   };
 }
 function buildMsg(p, link) {
   return (p.mot ? p.mot + '\n\n' : '') +
     `Ciné ${p.jour} ? Ma sélection au ${p.cinema}, ${p.heure} :\n\n` +
-    p.films.map(f => `• ${f.t} (${fmtDur(f.d)}) — ${f.s.join(', ')}`).join('\n') +
+    p.films.map(f => `${f.c ? '♥' : '•'} ${f.t} (${fmtDur(f.d)}) — ${f.s.join(', ')}${f.c ? ' (mon coup de cœur)' : ''}`).join('\n') +
     `\n\nBandes-annonces : ${link}` +
     (p.auteur ? `\n— ${p.auteur}` : '') +
     `\n\nChoisi avec Pot'corn`;
@@ -662,8 +711,8 @@ function packFilm(f) {
 async function createGroup(btn) {
   const prenom = S.prenom.trim();
   if (!prenom) { toast('Écris ton prénom'); document.getElementById('f-prenom')?.focus(); return; }
-  const list = S.gFilms === 'sel' && keptFilms().length ? keptFilms() : filmsFor();
-  if (!list.length) { toast('Aucun film à proposer sur ce créneau'); return; }
+  const list = filmsOfDay().slice(0, 80);   // tous les films du jour : chacun choisit à son heure
+  if (!list.length) { toast('Aucune séance à proposer ce jour-là'); return; }
   store.set('cine:prenom', prenom);
   btn.disabled = true; btn.textContent = 'Création…';
   try {
@@ -676,13 +725,22 @@ async function createGroup(btn) {
     const exp = new Date(DAYS[S.day]); exp.setDate(exp.getDate() + 2);
     await fb.fs.setDoc(fb.fs.doc(fb.db, 'seances', code), {
       v: 1, cinema: { id: cin().id, name: cin().name, short: cin().short },
-      jour: dayLong(S.day), jourISO: iso(DAYS[S.day]), from: hourMin(),
-      creator: fb.uid, auteur: prenom, films: list.slice(0, 80).map(packFilm),
+      jour: dayLong(S.day), jourISO: iso(DAYS[S.day]), from: 0,
+      creator: fb.uid, auteur: prenom, films: list.map(packFilm),
       createdAt: fb.fs.serverTimestamp(), expireAt: fb.fs.Timestamp.fromDate(exp), decision: null, roulette: null
+    });
+    // Mes choix déjà faits sur les cartes sont repris (mon heure = celle choisie en haut de l'écran)
+    const L = getList(), ids = new Set(list.map(f => f.id)), dispo = hourMin();
+    const kept = L.kept.filter(id => ids.has(id)), removed = L.removed.filter(id => ids.has(id));
+    const min = Math.max(dispo, S.day === 0 ? nowMin() : 0);
+    const todo = list.filter(f => f.s.some(x => toMin(x.h) >= min) && !kept.includes(f.id) && !removed.includes(f.id)).length;
+    await fb.fs.setDoc(fb.fs.doc(fb.db, 'seances', code, 'potes', fb.uid), {
+      prenom, dispo, kept, removed, coeur: L.coeur && kept.includes(L.coeur) ? L.coeur : null, done: !todo, at: fb.fs.serverTimestamp()
     });
     S.sheet = null;
     history.pushState(null, '', base() + '?g=' + code);
-    initGroup(code);
+    await initGroup(code);
+    toast('Séance créée ! Invite tes potes avec le bouton « Inviter »');
   } catch (e) {
     console.error(e); toast('Impossible de créer la séance. Vérifie la configuration Firebase.');
     btn.disabled = false; btn.innerHTML = ICON.group + ' Créer la séance';
@@ -728,6 +786,7 @@ function onGroupChange() {
   if (r && r.n !== G.rouN) { G.rouN = r.n; playRoulette(r); }
   const h = document.getElementById('ghead'); if (h) h.innerHTML = gHeadHTML();
   const d = document.getElementById('gdec'); if (d) d.innerHTML = gDecHTML();
+  const jx = document.getElementById('gjoinx'); if (jx) jx.innerHTML = gJoinOthersHTML();
   if (G.step === 'res' && !G.sheet && !document.querySelector('.vid')) {
     const b = document.getElementById('gbody'); if (b) b.innerHTML = gResHTML();
   }
@@ -749,10 +808,13 @@ function renderGroup() {
   $app.innerHTML = BRAND + `<div id="ghead" class="ghead">${gHeadHTML()}</div><div id="gdec">${gDecHTML()}</div>
     <div id="gbody" class="gbody">${body}</div>` + CREDIT + gSheetHTML();
   const el = document.querySelector('.card.front');
-  if (G.step === 'swipe' && el) attachSwipe(el, {
-    up: true, onDecide: gDecide,
-    onTap: id => { const f = filmById(id); if (f && f.yt) { G.playing = id; renderGroup(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
-  });
+  if (G.step === 'swipe' && el) {
+    attachSwipe(el, {
+      up: true, onDecide: gDecide,
+      onTap: id => { const f = filmById(id); if (f && f.yt) { G.playing = id; renderGroup(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
+    });
+    armNudge();
+  }
 }
 function potePill(p, i) {
   const ids = new Set(deckFor(p.dispo).map(f => f.id));
@@ -763,14 +825,14 @@ function potePill(p, i) {
 function gHeadHTML() {
   const D = G.doc, P = potesList();
   return `<div class="gt"><div><span class="kick">SÉANCE ENTRE POTES</span><h1>${esc(D.cinema.short)} · ${esc(D.jour)}</h1>
-      <p>${esc(fromText(D.from))} · lancée par ${esc(D.auteur)}</p></div>
+      <p>${D.films.length} film${D.films.length > 1 ? 's' : ''} à l’affiche · lancée par ${esc(D.auteur)}</p></div>
       ${ended() ? '' : `<a class="invite" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter</a>`}</div>
     <div class="potes">${P.length ? P.map(potePill).join('') : '<span class="msg" style="font-size:12px">Personne n’a encore rejoint la séance.</span>'}</div>`;
 }
 function inviteHref() {
   const D = G.doc, n = D.films.length;
-  const txt = `Séance ciné entre potes ! 🍿\n\n${D.auteur} propose ${n} film${n > 1 ? 's' : ''} au ${D.cinema.name}, ${D.jour} (${fromText(D.from)}).\n` +
-    `Chacun choisit de son côté, avec les bandes-annonces, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n\n👉 ${groupLink()}`;
+  const txt = `Séance ciné entre potes ! 🍿\n\n${D.auteur} t’invite au ${D.cinema.name}, ${D.jour}.\n` +
+    `Choisis tes films parmi les ${n} à l’affiche (bandes-annonces comprises) et dis à partir de quelle heure tu es dispo. Tu verras ce que les autres ont déjà choisi, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n\n👉 ${groupLink()}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
 function decisionHref() {
@@ -791,9 +853,9 @@ function gDecHTML() {
 
 /* Étape 1 : rejoindre (prénom + heure de dispo) */
 function dispoOpts() {
-  const from = G.doc.from, now = gToday() ? nowMin() : 0;
-  const o = [{ v: from, l: now > from || from % 30 ? 'Dès maintenant' : from ? 'Dès ' + hm(from) : 'Peu importe' }];
-  for (const h of [840, 960, 1020, 1080, 1140, 1200, 1260, 1320]) if (h > from && h > now) o.push({ v: h, l: 'Dès ' + hm(h) });
+  const now = gToday() ? nowMin() : 0;
+  const o = [{ v: now, l: now ? 'Dès maintenant' : 'Peu importe l’heure' }];
+  for (const h of [840, 960, 1020, 1080, 1140, 1200, 1260, 1320]) if (h > now + 15) o.push({ v: h, l: 'Dès ' + hm(h) });
   return o;
 }
 function gJoinHTML() {
@@ -802,12 +864,18 @@ function gJoinHTML() {
   if (G.jprenom == null) G.jprenom = S.prenom;
   return `<div class="dark gbody">
     <p class="msg">${isCreator() ? 'Ta séance est prête ! Dis à partir de quelle heure tu es dispo, puis invite tes potes avec le bouton « Inviter ».'
-      : `<b style="color:#fff">${esc(D.auteur)}</b> t’invite à choisir le film${others > 1 ? ` avec ${others} potes` : ''}. Chacun garde ou élimine les films de son côté, et Pot’corn trouve celui qui met tout le monde d’accord.`}</p>
+      : `<b style="color:#fff">${esc(D.auteur)}</b> t’invite à choisir le film${others > 1 ? ` avec ${others} potes` : ''}. Garde ou élimine les films à l’affiche, à partir de l’heure qui te va. Sur chaque carte, tu verras qui l’a déjà gardé.`}</p>
     <label class="field">Ton prénom<input id="g-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(G.jprenom)}" placeholder="Ex. : Julie"></label>
     <div class="lbl2">Tu es dispo à partir de quelle heure ?</div>
     <div class="dchips">${opts.map(o => `<button class="dchip ${o.v === G.jdispo ? 'on' : ''}" data-act="gdispo" data-v="${o.v}" aria-pressed="${o.v === G.jdispo}">${o.l}</button>`).join('')}</div>
     <button class="big or" data-act="gjoin">C’est parti, je choisis mes films</button>
-    <p class="msg" style="font-size:12px;text-align:center">${D.films.length} film${D.films.length > 1 ? 's' : ''} à départager · pas besoin de compte</p></div>`;
+    <p class="msg" style="font-size:12px;text-align:center">${D.films.length} film${D.films.length > 1 ? 's' : ''} à l’affiche · pas besoin de compte</p>
+    <div id="gjoinx">${gJoinOthersHTML()}</div></div>`;
+}
+/* Mis à jour en direct sur l'écran d'accueil de l'invité (sans toucher au champ prénom) */
+function gJoinOthersHTML() {
+  const done = potesList().filter(p => (p.kept || []).length);
+  return done.length ? `<button class="ghost" data-act="gstep" data-v="res">Voir ce que ${done.length > 1 ? 'les autres ont' : esc(done[0].prenom) + ' a'} déjà choisi</button>` : '';
 }
 async function gJoin(btn) {
   const prenom = String(G.jprenom || '').trim();
@@ -824,25 +892,35 @@ async function gJoin(btn) {
 }
 
 /* Étape 2 : glisser les cartes */
+/* Mes films restants : ceux déjà gardés par les autres d'abord (les plus demandés en tête) */
+function gDeck() {
+  const M = G.me, seen = new Set([...M.kept, ...M.removed]);
+  const others = potesList().filter(p => p.uid !== G.uid);
+  const score = f => others.reduce((s, p) => s + ((p.kept || []).includes(f.id) ? 1 : 0) + (p.coeur === f.id ? 1 : 0), 0);
+  const all = deckFor(M.dispo);
+  const rest = all.filter(f => !seen.has(f.id)).map((f, i) => ({ f, i, s: score(f) }))
+    .sort((a, b) => b.s - a.s || a.i - b.i).map(x => x.f);
+  return { all, rest };
+}
+function othersHTML(f) {
+  const fans = potesList().filter(p => p.uid !== G.uid && (p.kept || []).includes(f.id));
+  if (!fans.length) return '';
+  const c = fans.filter(p => p.coeur === f.id).map(p => esc(p.prenom));
+  return `<div class="others">${ICON.oks} Gardé par ${fans.map(p => esc(p.prenom)).join(', ')}${c.length ? ` · ${ICON.hs} coup de cœur de ${c.join(', ')}` : ''}</div>`;
+}
 function gSwipeHTML() {
-  const M = G.me, all = deckFor(M.dispo), seen = new Set([...M.kept, ...M.removed]);
-  const deck = all.filter(f => !seen.has(f.id));
-  if (!deck.length) { M.done = true; G.step = 'res'; saveSoon(); return gResHTML(); }
-  const ctx = { group: true, playing: G.playing, date: new Date(G.doc.jourISO + 'T00:00:00') };
-  const top = deck[0], next = deck[1];
-  return `<div class="gprog"><span>Film ${all.length - deck.length + 1} sur ${all.length}${M.coeur ? ` · ${ICON.hs} coup de cœur donné` : ''}</span>
+  const M = G.me, { all, rest } = gDeck();
+  if (!rest.length) { M.done = true; G.step = 'res'; saveSoon(); return gResHTML(); }
+  const ctx = { group: true, playing: G.playing, date: new Date(G.doc.jourISO + 'T00:00:00'), others: othersHTML };
+  const num = all.length - rest.length + 1, top = rest[0], next = rest[1];
+  return `<div class="gprog"><span>Film ${num} sur ${all.length}${M.coeur ? ` · ${ICON.hs} coup de cœur donné` : ''}</span>
       <button class="linkbtn" data-act="gstep" data-v="res">Résultats ›</button></div>
-    <div class="stage">${next ? cardHTML(next, all.indexOf(next) + 1, all.length, false, ctx) : ''}${cardHTML(top, all.indexOf(top) + 1, all.length, true, ctx)}</div>
-    <div class="actions g4">
-      <button class="rb undo" data-act="gundo" aria-label="Annuler le dernier choix" ${G.hist.length ? '' : 'disabled'}>${ICON.undo}</button>
-      <button class="rb nope" data-act="gdecide" data-v="nope" aria-label="Éliminer ce film">${ICON.x}</button>
-      <button class="rb coeur" data-act="gdecide" data-v="coeur" aria-label="Coup de cœur, compte double">${ICON.heart}</button>
-      <button class="rb keep" data-act="gdecide" data-v="keep" aria-label="Garder ce film">${ICON.ok}</button></div>
-    <div class="hint">← non merci · je garde →<br>↑ vers le haut : coup de cœur (un seul, il compte double)<br>Toucher l'image pour la bande-annonce</div>`;
+    <div class="stage cards">${next ? cardHTML(next, num + 1, all.length, false, ctx) : ''}${cardHTML(top, num, all.length, true, ctx)}</div>
+    ${underBar(G.hist.length > 0, 'gundo', 'gfinish', 'J’ai fini mes choix')}`;
 }
 function gDecide(dir) {
   flyOut(dir, id => {
-    const M = G.me, prev = M.coeur || null;
+    const M = G.me, prev = M.coeur || null; _swipes++;
     M.kept = M.kept.filter(x => x !== id); M.removed = M.removed.filter(x => x !== id);
     (dir === 'nope' ? M.removed : M.kept).push(id);
     if (dir === 'coeur') {
@@ -867,7 +945,7 @@ function gUndo() {
 /* Étape 3 : résultats */
 function gResults() {
   const P = potesList(), n = P.length;
-  const common = Math.max(G.doc.from || 0, ...P.map(p => p.dispo || 0));   // heure où tout le monde est dispo
+  const common = Math.max(0, ...P.map(p => p.dispo || 0));   // heure où tout le monde est dispo
   const rows = G.doc.films.map(f => {
     const fans = P.filter(p => (p.kept || []).includes(f.id));
     const coeurs = P.filter(p => p.coeur === f.id);
@@ -895,7 +973,8 @@ function gResHTML() {
   const R = gResults(), { P, n } = R, dc = G.doc.decision, rl = G.doc.roulette;
   const waiting = P.filter(p => !p.done).map(p => esc(p.prenom) + (p.uid === G.uid ? ' (toi)' : ''));
   let h = '';
-  if (n <= 1) h += `<p class="msg">${G.me ? 'Tu es seul pour l’instant : invite tes potes pour trouver le film commun.' : 'Personne n’a encore choisi.'}</p>`;
+  if (n <= 1) h += `<p class="msg">${G.me ? 'Tu es seul pour l’instant : invite tes potes pour trouver le film commun.' : 'Personne n’a encore choisi.'}</p>` +
+    (G.me && !ended() ? `<a class="big or" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter mes potes sur WhatsApp</a>` : '');
   else h += `<p class="msg">Séances qui vont à tout le monde : <b style="color:#fff">${esc(fromText(R.common))}</b>${waiting.length ? `<br>Encore en train de choisir : ${waiting.join(', ')}` : '<br>Tout le monde a fini !'}</p>`;
 
   if (R.matches.length) h += `<div class="sec"><h2>Match ! <span class="tag">TOUT LE MONDE PARTANT</span></h2>${R.matches.map(r => rCardHTML(r, n, true)).join('')}</div>`;
@@ -918,7 +997,8 @@ function gResHTML() {
   if (!ended()) {
     if (!G.me) h += `<button class="big or" data-act="gstep" data-v="join">Participer à la séance</button>`;
     else if (!G.me.done) h += `<button class="big or" data-act="gstep" data-v="swipe">Continuer à choisir</button>`;
-    h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter des potes sur WhatsApp</a>`;
+    else { const left = gDeck().rest.length; if (left) h += `<button class="big cream" data-act="gmore">Voir les ${left} film${left > 1 ? 's' : ''} que je n’ai pas vus</button>`; }
+    if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes sur WhatsApp</a>`;
     if (G.me && G.me.done) h += `<button class="ghost" data-act="greset">Refaire mes choix</button>`;
   } else h += `<p class="msg">Cette séance est passée.</p>`;
   h += `<a class="ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff" href="${base()}">Voir toutes les séances</a>`;
@@ -1014,7 +1094,8 @@ document.addEventListener('click', e => {
     case 'undo': undo(); break;
     case 'stop': if (G.on) G.playing = null; else S.playing = null; render(); break;
     case 'reset': saveList({ kept: [], removed: [], hist: [] }); render(); break;
-    case 'unkeep': { const L = getList(); L.kept = L.kept.filter(x => x !== v); L.removed.push(v); saveList(L); render(); break; }
+    case 'unkeep': { const L = getList(); L.kept = L.kept.filter(x => x !== v); L.removed.push(v); if (L.coeur === v) L.coeur = null; saveList(L); render(); break; }
+    case 'finish': S.view = 'sel'; S.playing = null; render(); window.scrollTo(0, 0); break;
     case 'rekeep': { const L = getList(); L.removed = L.removed.filter(x => x !== v); L.kept.push(v); saveList(L); render(); break; }
     case 'toggleRemoved': S.showRemoved = !S.showRemoved; render(); break;
     case 'share': share(); break;
@@ -1022,12 +1103,17 @@ document.addEventListener('click', e => {
     case 'retry': loadCinema(S.cin, true); break;
     case 'closevideo': b.closest('.vid')?.remove(); if (G.on && G.step === 'res') onGroupChange(); break;
     /* Séance entre potes */
-    case 'gfilms': S.gFilms = v; render(); break;
     case 'gcreate': createGroup(b); break;
     case 'gdispo': G.jdispo = Number(v); document.querySelectorAll('.dchip').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); break;
     case 'gjoin': gJoin(b); break;
     case 'gdecide': gDecide(v); break;
     case 'gundo': gUndo(); break;
+    case 'gfinish':
+      if (!G.me) break;
+      G.me.done = true; G.step = 'res'; G.playing = null; saveSoon(); renderGroup(); window.scrollTo(0, 0); break;
+    case 'gmore':
+      if (!G.me) break;
+      G.me.done = false; G.step = 'swipe'; saveSoon(); renderGroup(); window.scrollTo(0, 0); break;
     case 'gstep':
       if (v === 'swipe' && !G.me) break;
       G.step = v; G.playing = null; renderGroup(); window.scrollTo(0, 0); break;
@@ -1049,6 +1135,13 @@ function confirmReset() {
   _resetArmed = Date.now(); toast('Touche encore une fois pour effacer tes choix et recommencer'); return false;
 }
 document.addEventListener('keydown', e => {
+  // Flèches du clavier : ← non merci, → je garde, ↑ coup de cœur
+  const arrows = { ArrowLeft: 'nope', ArrowRight: 'keep', ArrowUp: 'coeur' };
+  if (arrows[e.key] && !e.target.closest('input,textarea') && document.querySelector('.card.front') && !document.querySelector('.sheet, .vid, .roul')) {
+    e.preventDefault();
+    if (G.on) { if (G.step === 'swipe') gDecide(arrows[e.key]); } else if (S.view === 'deck') decide(arrows[e.key]);
+    return;
+  }
   if (e.key !== 'Escape') return;
   const vid = document.querySelector('.vid'); if (vid) { vid.remove(); return; }
   const rou = document.querySelector('.roul'); if (rou) { rou.remove(); onGroupChange(); return; }
