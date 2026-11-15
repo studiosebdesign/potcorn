@@ -22,6 +22,7 @@ const TZ = 'Europe/Paris';
 const RECHECK_MS = 60 * 60 * 1000;   // le mardi, au plus une vérification par heure
 const DAYS = 8;                      // aujourd'hui + 7 jours
 const TMDB_IMG = 'https://image.tmdb.org/t/p/';
+const CACHE_VERSION = 'v2';                // à changer si le format des données change
 
 /* ---------- Dates à l'heure de Paris ---------- */
 export function parisDate(now = new Date(), addDays = 0) {
@@ -63,16 +64,23 @@ export function minutes(rt) {
   const n = parseInt(s, 10);
   return isNaN(n) ? 0 : (n > 600 ? Math.round(n / 60) : n);
 }
+// AlloCiné : original / original_st / original_sme = version originale sous-titrée,
+// multiple / multiple_st / multiple_sme = version française.
 function version(key, st) {
   const k = String(key).toLowerCase();
   const dv = String(st?.diffusionVersion || '').toUpperCase();
-  if (k.includes('original_st') || dv === 'ORIGINAL_ST') return 'VOST';
-  if (k === 'original' || dv === 'ORIGINAL') return 'VO';
+  if (k.startsWith('original') || dv.startsWith('ORIGINAL')) return 'VOST';
   return 'VF';
 }
 function bookingUrl(st) {
   const t = st?.data?.ticketing || st?.ticketing;
-  if (Array.isArray(t)) for (const x of t) { const u = x?.urls?.[0] || x?.url; if (u) return u; }
+  if (!Array.isArray(t)) return null;
+  const order = ['default', 'fr'];
+  const sorted = [...t].sort((a, b) => {
+    const ia = order.indexOf(a?.provider), ib = order.indexOf(b?.provider);
+    return (ia < 0 ? 9 : ia) - (ib < 0 ? 9 : ib);
+  });
+  for (const x of sorted) { const u = x?.urls?.[0] || x?.url; if (u && /^https:\/\//.test(u)) return u; }
   return null;
 }
 export function parseResults(pages) {
@@ -102,7 +110,7 @@ export function parseResults(pages) {
         if (!Array.isArray(arr)) continue;
         for (const st of arr) {
           const at = st?.startsAt; if (!at || at.length < 16) continue;
-          f.s.push({ d: at.slice(0, 10), h: at.slice(11, 16), v: version(gk, st), book: bookingUrl(st) });
+          f.s.push({ d: at.slice(0, 10), h: at.slice(11, 16), v: version(gk, st), book: bookingUrl(st), ap: st?.isPreview === true });
         }
       }
     }
@@ -198,8 +206,9 @@ export default async (req) => {
   const now = new Date();
   const store = await blobStore('seances');
 
+  const key = `${id}-${CACHE_VERSION}`;
   if (store && !debug) {
-    const c = await store.get(id, { type: 'json' }).catch(() => null);
+    const c = await store.get(key, { type: 'json' }).catch(() => null);
     if (c && c.expires > now.getTime()) return json({ ...c, fromCache: true });
   }
 
@@ -228,12 +237,12 @@ export default async (req) => {
     if (token && films.length) films = await enrich(films, token, await blobStore('tmdb'));
     const theater = days.flatMap(x => x.pages).find(p => p?.theater?.name)?.theater?.name || null;
     const payload = { cinema: id, theater, fetchedAt: now.toISOString(), expires: computeExpiry(now, films), films };
-    if (store) await store.setJSON(id, payload).catch(() => {});
+    if (store) await store.setJSON(key, payload).catch(() => {});
     return json(payload);
   } catch (e) {
     if (debug) return json({ test: 'ÉCHEC', erreur: String(e.message || e), details: e.info || null }, 502);
     if (store) {
-      const c = await store.get(id, { type: 'json' }).catch(() => null);
+      const c = await store.get(key, { type: 'json' }).catch(() => null);
       if (c) return json({ ...c, fromCache: true, stale: true });
     }
     return json({ error: 'AlloCiné ne répond pas pour le moment.' }, 502);

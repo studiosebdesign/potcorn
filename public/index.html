@@ -14,11 +14,11 @@
 html,body{margin:0;background:var(--ink);color:#fff;font-family:Inter,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer}
 a{color:var(--or)}
-.wrap{max-width:440px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;gap:12px;padding:10px 14px calc(16px + env(safe-area-inset-bottom))}
+.wrap{max-width:440px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;gap:12px;padding:10px 14px calc(72px + env(safe-area-inset-bottom))}
 .demo{font-size:11px;text-align:center;color:#8f8f8f;line-height:1.5}
 .brand{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .logo{display:flex;align-items:center;gap:8px;font-family:'Rubik Mono One',sans-serif;font-size:20px;color:var(--cream);letter-spacing:.02em;text-decoration:none}
-.logo i{font-style:normal;color:var(--or)}
+.logo i{font-style:normal;color:var(--or);margin:0 -.32em}
 .tagline{font-size:11px;color:#9a9a9a;text-align:right}
 .topbar{display:flex;gap:6px;align-items:stretch}
 .tk{flex:1;min-width:0;border:0;border-radius:10px;padding:6px 9px;min-height:50px;text-align:left;color:var(--ink);display:flex;flex-direction:column;justify-content:center}
@@ -273,7 +273,7 @@ function isNew(f) {
   const diff = (DAYS[S.day] - new Date(sd + 'T00:00:00')) / 86400000;
   return diff >= 0 && diff < 7;
 }
-const seaTxt = f => f.s.map(x => x.h + (x.v !== 'VF' ? ' ' + x.v : '')).join(' · ');
+const seaTxt = f => f.s.map(x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : '')).join(' · ');
 
 /* ---------- Écran : les cartes ---------- */
 function topBar(n) {
@@ -300,7 +300,7 @@ function cardHTML(f, num, total, isTop) {
     : picture + (f.yt ? `<span class="playbtn">${ICON.play}</span>` : '');
   const allo = safeUrl(f.allo) || `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(f.t)}`;
   return `<article class="card ${isTop ? 'front' : 'behind'}" data-id="${esc(f.id)}" aria-label="${esc(f.t)}">
-    <div class="chead"><span>N° ${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>${isNew(f) ? '<span class="badge">SORTIE DE LA SEMAINE</span>' : ''}</div>
+    <div class="chead"><span>N° ${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>${f.s.some(x => x.ap) ? '<span class="badge">AVANT-PREMIÈRE</span>' : isNew(f) ? '<span class="badge">SORTIE DE LA SEMAINE</span>' : ''}</div>
     <div class="media" role="button" aria-label="${f.yt ? 'Lire la bande-annonce' : 'Affiche'}">${media}</div>
     <div class="ctitle">${esc(f.t)}</div>
     <div class="stats">
@@ -309,7 +309,7 @@ function cardHTML(f, num, total, isTop) {
       <div class="stat"><small>VERSION</small><b>${vers}</b></div>
     </div>
     <div class="stub">${f.s.map(x => {
-      const label = x.h + (x.v !== 'VF' ? ' ' + x.v : ''); const b = safeUrl(x.book);
+      const label = x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : ''); const b = safeUrl(x.book);
       return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${x.h}">${label}</a>` : `<span class="chip">${label}</span>`;
     }).join('')}
       <a class="allo" href="${allo}" target="_blank" rel="noopener">AlloCiné ›</a></div>
@@ -458,7 +458,7 @@ function sheetHTML() {
 function payload() {
   return {
     auteur: S.prenom.trim(), mot: S.mot.trim(), cinema: cin().name, jour: dayLong(S.day), jourISO: iso(DAYS[S.day]), heure: hourText(),
-    films: keptFilms().map(f => ({ id: f.id, t: f.t, d: f.d, g: f.g, yt: f.yt || null, img: anyImg(f) || null, s: f.s.map(x => x.h + (x.v !== 'VF' ? ' ' + x.v : '')) }))
+    films: keptFilms().map(f => ({ id: f.id, t: f.t, d: f.d, g: f.g, yt: f.yt || null, img: anyImg(f) || null, s: f.s.map(x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : '')) }))
   };
 }
 function buildMsg(p, link) {
