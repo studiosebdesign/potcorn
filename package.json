@@ -1,0 +1,8 @@
+{
+  "name": "potcorn",
+  "private": true,
+  "description": "Pot'corn — le ciné qu'on choisit entre potes",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}
