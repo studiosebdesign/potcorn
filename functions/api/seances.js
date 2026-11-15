@@ -25,7 +25,10 @@ const TZ = 'Europe/Paris';
 const RECHECK_MS = 60 * 60 * 1000;   // le mardi, au plus une vérification par heure
 const DAYS = 8;                      // aujourd'hui + 7 jours
 const TMDB_IMG = 'https://image.tmdb.org/t/p/';
-const CACHE_VERSION = 'v2';                // à changer si le format des données change
+const CACHE_VERSION = 'v2';
+// Offre gratuite Cloudflare : 50 appels externes maximum par visite. On en garde 4 de marge.
+const BUDGET = 46;
+const ALLO_MAX = 30;                       // part réservée à AlloCiné (8 jours + pages en plus)                // à changer si le format des données change
 
 /* ---------- Dates à l'heure de Paris ---------- */
 function parisDate(now = new Date(), addDays = 0) {
@@ -128,7 +131,8 @@ function parseResults(pages) {
 }
 
 /* ---------- Appels réseau ---------- */
-async function get(url, headers = {}, ms = 7000) {
+async function get(url, headers = {}, ms = 7000, ctx = null) {
+  if (ctx) { if (ctx.used >= BUDGET) throw new Error('budget'); ctx.used++; }
   const ctrl = new AbortController(); const timer = setTimeout(() => ctrl.abort(), ms);
   try { return await fetch(url, { headers, signal: ctrl.signal }); }
   finally { clearTimeout(timer); }
@@ -140,9 +144,9 @@ function alloHeaders(id) {
     'Referer': `${ALLO}/seance/salle_gen_csalle=${id}.html`
   };
 }
-async function fetchDay(id, date) {
+async function fetchDay(id, date, ctx) {
   const base = `${ALLO}/_/showtimes/theater-${id}/d-${date}/`;
-  const r = await get(base, alloHeaders(id));
+  const r = await get(base, alloHeaders(id), 7000, ctx);
   const type = r.headers.get('content-type') || '';
   if (!r.ok || !type.includes('json')) {
     const text = (await r.text()).slice(0, 300);
@@ -152,45 +156,62 @@ async function fetchDay(id, date) {
   const pages = [first];
   const total = Math.min(Number(first?.pagination?.totalPages || 1), 5);
   for (let p = 2; p <= total; p++) {
-    const rp = await get(`${base}p-${p}/`, alloHeaders(id));
+    if (ctx.used >= ALLO_MAX) break;
+    const rp = await get(`${base}p-${p}/`, alloHeaders(id), 7000, ctx);
     if (rp.ok) pages.push(await rp.json());
   }
   return { date, url: base, status: r.status, pages };
 }
 
 /* ---------- Bandes-annonces TMDB (facultatif) ---------- */
-function tmdbRequest(path, token, params = {}) {
+function tmdbRequest(path, token, params = {}, ctx = null) {
   const u = new URL('https://api.themoviedb.org/3' + path);
   for (const [k, v] of Object.entries(params)) if (v != null && v !== '') u.searchParams.set(k, v);
   const headers = { Accept: 'application/json' };
   if (token.length > 40) headers.Authorization = 'Bearer ' + token; else u.searchParams.set('api_key', token);
-  return get(u.toString(), headers, 6000).then(r => r.ok ? r.json() : null).catch(() => null);
+  return get(u.toString(), headers, 6000, ctx).then(r => r.ok ? r.json() : null);
 }
 function pickTrailer(list) {
   const yt = (list || []).filter(v => v.site === 'YouTube' && v.key);
   return (yt.find(v => v.type === 'Trailer' && v.official) || yt.find(v => v.type === 'Trailer') || yt.find(v => v.type === 'Teaser') || yt[0] || null)?.key || null;
 }
-async function tmdbFor(f, token, store) {
-  const key = 'film-' + f.id;
-  if (store) { const c = await store.get(key, { type: 'json' }).catch(() => null); if (c && Date.now() - c.at < 7 * 86400000) return c; }
-  const year = f.sortie ? String(f.sortie).slice(0, 4) : '';
-  let found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', region: 'FR', include_adult: 'false', primary_release_year: year });
-  if (!found?.results?.length && year) found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', include_adult: 'false' });
-  const m = found?.results?.[0];
-  const info = { at: Date.now(), yt: null, backdrop: null, poster: null };
-  if (m) {
-    info.backdrop = m.backdrop_path ? TMDB_IMG + 'w780' + m.backdrop_path : null;
-    info.poster = m.poster_path ? TMDB_IMG + 'w500' + m.poster_path : null;
-    const fr = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'fr-FR' });
-    info.yt = pickTrailer(fr?.results);
-    if (!info.yt) { const en = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'en-US' }); info.yt = pickTrailer(en?.results); }
-  }
-  if (store) await store.setJSON(key, info).catch(() => {});
-  return info;
+// Cherche la bande-annonce d'un film (3 appels TMDB au plus). Renvoie null si le budget
+// d'appels de cette visite est épuisé : le film sera traité à la visite suivante.
+async function tmdbFor(f, token, store, ctx) {
+  const key = 'film2-' + f.id;   // « film2 » : ignore les recherches ratées enregistrées par l'ancienne version
+  if (store) { const c = await store.get(key).catch(() => null); if (c && Date.now() - c.at < 7 * 86400000) return c; }
+  try {
+    const year = f.sortie ? String(f.sortie).slice(0, 4) : '';
+    let found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', region: 'FR', include_adult: 'false', primary_release_year: year }, ctx);
+    if (!found?.results?.length && year) found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', include_adult: 'false' }, ctx);
+    const m = found?.results?.[0];
+    const info = { at: Date.now(), yt: null, backdrop: null, poster: null };
+    if (m) {
+      info.backdrop = m.backdrop_path ? TMDB_IMG + 'w780' + m.backdrop_path : null;
+      info.poster = m.poster_path ? TMDB_IMG + 'w500' + m.poster_path : null;
+      const fr = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'fr-FR' }, ctx);
+      info.yt = pickTrailer(fr?.results);
+      if (!info.yt) { const en = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'en-US' }, ctx); info.yt = pickTrailer(en?.results); }
+    }
+    if (store) await store.setJSON(key, info).catch(() => {});
+    return info;
+  } catch (e) { return null; }   // budget épuisé ou TMDB indisponible
 }
-async function enrich(films, token, store) {
-  const infos = await Promise.all(films.map(f => tmdbFor(f, token, store).catch(() => null)));
-  return films.map((f, i) => ({ ...f, yt: infos[i]?.yt || null, backdrop: infos[i]?.backdrop || null, poster: f.poster || infos[i]?.poster || null }));
+// Ajoute les bandes-annonces aux films qui n'en ont pas encore été cherchées, tant que le budget le permet.
+async function enrich(films, token, store, ctx) {
+  const todo = films.filter(f => !f.tmdbDone);
+  while (todo.length) {
+    const size = Math.min(5, Math.floor((BUDGET - ctx.used) / 3), todo.length);
+    if (size < 1) break;
+    const batch = todo.splice(0, size);
+    const infos = await Promise.all(batch.map(f => tmdbFor(f, token, store, ctx)));
+    batch.forEach((f, i) => {
+      const info = infos[i]; if (!info) return;
+      f.yt = info.yt || null; f.backdrop = info.backdrop || null; f.poster = f.poster || info.poster || null; f.tmdbDone = true;
+    });
+    if (infos.some(x => !x)) break;
+  }
+  return films;
 }
 
 /* ---------- Réponse ---------- */
@@ -216,15 +237,26 @@ export async function onRequestGet({ request, env }) {
   const store = kvStore(env, 'seances-');
   const key = `${id}-${CACHE_VERSION}`;
 
+  const ctx = { used: 0 };
+  const token = env.TMDB_TOKEN;
   if (store && !debug) {
     const c = await store.get(key).catch(() => null);
-    // une mémoire enregistrée sans bandes-annonces est ignorée dès que la clé TMDB est ajoutée
-    if (c && c.expires > now.getTime() && (!env.TMDB_TOKEN || c.tmdb)) return json({ ...c, fromCache: true });
+    if (c && c.expires > now.getTime()) {
+      // Programme en mémoire : s'il manque encore des bandes-annonces, on continue à les chercher
+      // (sans recontacter AlloCiné), puis on met la mémoire à jour.
+      if (token && c.films.some(f => !f.tmdbDone)) {
+        await enrich(c.films, token, kvStore(env, 'tmdb-'), ctx);
+        c.pending = c.films.some(f => !f.tmdbDone); c.tmdb = !c.pending;
+        await store.setJSON(key, c, (c.expires - now.getTime()) / 1000 + 7 * 86400).catch(() => {});
+        return json({ ...c, fromCache: true });
+      }
+      return json({ ...c, fromCache: true });
+    }
   }
 
   try {
     const dates = [...Array(DAYS)].map((_, i) => parisDate(now, i));
-    const days = await Promise.all(dates.map(d => fetchDay(id, d)));
+    const days = await Promise.all(dates.map(d => fetchDay(id, d, ctx)));
     let films = parseResults(days.flatMap(x => x.pages));
 
     if (debug) {
@@ -239,14 +271,15 @@ export async function onRequestGet({ request, env }) {
         cles_seances: Object.keys(r0.showtimes || {}),
         films_lus: films.length,
         premier_film: films[0] || null,
-        tmdb: env.TMDB_TOKEN ? 'clé présente' : 'pas de clé'
+        tmdb: env.TMDB_TOKEN ? 'clé présente' : 'pas de clé',
+        appels_utilises: ctx.used + ' / 50'
       });
     }
 
-    const token = env.TMDB_TOKEN;
-    if (token && films.length) films = await enrich(films, token, kvStore(env, 'tmdb-'));
+    if (token && films.length) films = await enrich(films, token, kvStore(env, 'tmdb-'), ctx);
+    const pending = !!token && films.some(f => !f.tmdbDone);
     const theater = days.flatMap(x => x.pages).find(p => p?.theater?.name)?.theater?.name || null;
-    const payload = { cinema: id, theater, fetchedAt: now.toISOString(), expires: computeExpiry(now, films), tmdb: !!token, films };
+    const payload = { cinema: id, theater, fetchedAt: now.toISOString(), expires: computeExpiry(now, films), tmdb: !!token && !pending, pending, films };
     // gardé en mémoire 7 jours de plus que sa validité, pour servir de secours si AlloCiné ne répond pas
     if (store) await store.setJSON(key, payload, (payload.expires - now.getTime()) / 1000 + 7 * 86400).catch(() => {});
     return json(payload);
