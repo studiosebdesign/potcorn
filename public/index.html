@@ -372,12 +372,39 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .star{flex:none;width:48px;height:48px;border:0;border-radius:50%;background:transparent;color:#8A8274;display:flex;align-items:center;justify-content:center;padding:0}
 .star svg{fill:none}
 .star.on{color:var(--or)}.star.on svg{fill:currentColor}
-.pnote svg{width:15px;height:15px;vertical-align:-2px;color:var(--or)}
-.sheet .note svg{width:15px;height:15px;vertical-align:-2px;color:var(--or)}
+.pnote svg{width:15px;height:15px;vertical-align:-2px;color:var(--or);fill:currentColor}
+.sheet .note svg{width:15px;height:15px;vertical-align:-2px;color:var(--or);fill:currentColor}
 /* Aide à l'installation */
 .isteps{width:100%;box-sizing:border-box;text-align:left;background:#fff;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.45;margin:4px 0}
 .isteps ol{margin:6px 0 0;padding-left:20px}.isteps li{margin:4px 0}
 .inst .ibox{max-height:88vh;overflow:auto}
+
+/* Cadran soleil / lune */
+.sdial{position:relative;margin-top:10px;border-radius:18px;overflow:hidden;background:linear-gradient(#BFE2EC,#EEF6F1);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;outline:none;-webkit-tap-highlight-color:transparent}
+.sdial:focus-visible{box-shadow:0 0 0 3px var(--or)}
+.sdial.drag{cursor:grabbing}
+.sdial>i{position:absolute;inset:0;pointer-events:none}
+.sdial .dusk{background:linear-gradient(#F2A262,#F9DDB0);opacity:var(--dusk,0)}
+.sdial .night{background:linear-gradient(#131833,#2C3262);opacity:var(--night,0)}
+.sdial svg{position:relative;display:block;width:100%;height:auto}
+.sdial .stars{fill:#F4EFE6;opacity:var(--night,0)}
+.sdial .arc{fill:none;stroke:rgba(27,27,27,.25);stroke-width:1.5}
+.sdial .tick{fill:rgba(27,27,27,.45)}.sdial .tick.past{fill:rgba(27,27,27,.15)}
+.sdial .hl{font:700 10px Inter,sans-serif;fill:#4A453D;text-anchor:middle}
+.sdial .horizon{stroke:rgba(27,27,27,.55);stroke-width:2;stroke-dasharray:6 5}
+.sdial.is-night .arc{stroke:rgba(244,239,230,.25)}.sdial.is-night .tick{fill:rgba(244,239,230,.55)}.sdial.is-night .tick.past{fill:rgba(244,239,230,.15)}
+.sdial.is-night .hl{fill:#D9D3C8}.sdial.is-night .horizon{stroke:rgba(244,239,230,.5)}
+.sdial .halo{fill:rgba(255,255,255,.35);transition:r .15s}
+.sdial.drag .halo{r:30px}
+.sdial .sun>circle{fill:var(--or)}.sdial .sun line{stroke:var(--or);stroke-width:2.6;stroke-linecap:round}
+.sdial .mdark{fill:#3E4475;stroke:rgba(244,239,230,.55);stroke-width:1}.sdial .mlit{fill:#F4EFE6}
+.sdlab{position:absolute;left:0;right:0;top:47%;transform:translateY(-50%);text-align:center;pointer-events:none;color:var(--ink)}
+.sdlab small{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:#4A453D}
+.sdlab b{font-family:'Rubik Mono One',sans-serif;font-weight:400;font-size:26px}
+.sdlab b.sm{font-size:17px}
+.sdcap{position:absolute;left:0;right:0;bottom:9px;text-align:center;font-size:12px;font-weight:700;color:#3d3830;pointer-events:none}
+.sdhint{position:absolute;top:8px;right:12px;font-size:10px;font-weight:700;color:#4A453D;opacity:.8;pointer-events:none}
+.sdial.is-night .sdlab,.sdial.is-night .sdcap,.sdial.is-night .sdhint{color:var(--cream)}.sdial.is-night .sdlab small{color:#D9D3C8}
 </style>
 </head>
 <body>
@@ -408,11 +435,6 @@ const CIN_API = '/api/cinemas';
 const DEPC = {"01":[46.07,5.43,63],"02":[49.46,3.61,68],"03":[46.37,3.14,65],"04":[44.13,6.23,67],"05":[44.64,6.21,66],"06":[43.89,7.17,51],"07":[44.82,4.38,66],"08":[49.7,4.71,56],"09":[42.94,1.5,58],"10":[48.31,4.12,56],"11":[43.07,2.45,65],"12":[44.31,2.63,71],"13":[43.54,5.09,58],"14":[49.11,-0.36,65],"15":[45.05,2.73,63],"16":[45.66,0.25,65],"17":[45.72,-0.79,87],"18":[47.01,2.42,65],"19":[45.32,1.88,64],"2A":[41.88,8.98,60],"2B":[42.44,9.11,66],"21":[47.46,4.8,63],"22":[48.47,-2.78,67],"23":[46.06,1.99,53],"24":[45.14,0.71,67],"25":[47.08,6.37,65],"26":[44.74,5.21,72],"27":[49.08,1.04,64],"28":[48.46,1.38,54],"29":[48.27,-4.26,74],"30":[43.97,4.06,62],"31":[43.32,1.24,89],"32":[43.69,0.45,59],"33":[44.9,-0.45,88],"34":[43.6,3.36,69],"35":[48.17,-1.65,66],"36":[46.82,1.54,62],"37":[47.22,0.69,55],"38":[45.3,5.49,72],"39":[46.79,5.71,57],"40":[43.99,-0.69,81],"41":[47.66,1.41,67],"42":[45.76,4.24,62],"43":[45.09,3.78,59],"44":[47.36,-1.76,60],"45":[47.92,2.31,60],"46":[44.64,1.6,51],"47":[44.37,0.48,52],"48":[44.55,3.5,53],"49":[47.39,-0.54,65],"50":[49.09,-1.32,73],"51":[48.96,4.22,64],"52":[48.14,5.29,69],"53":[48.14,-0.64,57],"54":[48.95,6.28,85],"55":[49.02,5.36,67],"56":[47.74,-2.9,74],"57":[49.04,6.76,80],"58":[47.12,3.53,67],"59":[50.54,3.15,92],"60":[49.41,2.42,61],"61":[48.59,0.05,67],"62":[50.51,2.37,70],"63":[45.78,3.19,69],"64":[43.21,-0.89,76],"65":[43.17,0.18,51],"66":[42.62,2.47,59],"67":[48.61,7.58,63],"68":[47.86,7.24,48],"69":[45.88,4.71,50],"70":[47.63,6.1,56],"71":[46.65,4.57,70],"72":[48.03,0.22,53],"73":[45.53,6.38,61],"74":[46.07,6.38,48],"75":[48.86,2.35,7],"76":[49.66,0.92,64],"77":[48.61,2.96,63],"78":[48.77,1.84,41],"79":[46.53,-0.3,62],"80":[49.97,2.29,66],"81":[43.8,2.22,53],"82":[44.08,1.37,49],"83":[43.43,6.28,55],"84":[44.04,5.19,54],"85":[46.68,-1.48,75],"86":[46.61,0.55,73],"87":[45.92,1.28,53],"88":[48.17,6.31,70],"89":[47.86,3.6,66],"90":[47.62,6.95,22],"91":[48.53,2.25,31],"92":[48.84,2.24,12],"93":[48.9,2.45,12],"94":[48.77,2.46,12],"95":[49.07,2.1,35],"971":[16.16,-61.43,42],"972":[14.64,-61.02,30],"973":[4.27,-53.02,185],"974":[-21.14,55.52,32]};
 const API = '/api/seances';
 const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-const HOURS = [
-  { v: -1, l: 'Maintenant' }, { v: 0, l: 'Toute la journée' },
-  { v: 840, l: '14 h' }, { v: 1020, l: '17 h' }, { v: 1140, l: '19 h' },
-  { v: 1200, l: '20 h' }, { v: 1260, l: '21 h' }, { v: 1320, l: '22 h' }
-];
 
 /* ---------- Outils ---------- */
 const $app = document.getElementById('app');
@@ -442,7 +464,7 @@ function b64dec(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.lengt
 const base = () => location.origin + location.pathname;
 const BRAND = `<div class="brand"><a class="logo" href="./" aria-label="Pot'corn, accueil">
   <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-    <circle cx="10" cy="9" r="5" fill="#F4EFE6"/><circle cx="17" cy="6" r="5.5" fill="#F4EFE6"/><circle cx="23" cy="10" r="4.5" fill="#F4EFE6"/>
+    <circle cx="10" cy="9" r="5" fill="#F4EFE6"/><circle cx="17" cy="6" r="5.5" fill="#F4EFE6"/><rect x="7" y="8.5" width="18" height="4" fill="#F4EFE6"/><circle cx="23" cy="10" r="4.5" fill="#F4EFE6"/>
     <path d="M6 12h20l-2.6 17H8.6z" fill="#F4EFE6"/>
     <path d="M10.5 12l1.2 17M16 12v17M21.5 12l-1.2 17" stroke="#F28C28" stroke-width="2.6"/>
   </svg><span>POT<i>'</i>CORN</span></a><span class="tagline">le ciné qu'on choisit<br>entre potes</span></div>`;
@@ -519,13 +541,148 @@ const hourMin = () => S.hour === -1 ? (S.day === 0 ? nowMin() : 0) : S.hour;
 function hourText() {
   if (S.hour === 0 || (S.hour === -1 && S.day !== 0)) return 'toute la journée';
   if (S.hour === -1) return 'dès maintenant';
-  return 'dès ' + HOURS.find(h => h.v === S.hour).l;
+  return 'dès ' + hm(S.hour);
 }
 function hourShort() {
   if (S.hour === -1) return S.day === 0 ? 'Maintenant' : 'Journée';
   if (S.hour === 0) return 'Journée';
-  return HOURS.find(h => h.v === S.hour).l;
+  return hm(S.hour);
 }
+/* =====================================================================
+   CADRAN « SOLEIL » : on choisit l'heure en faisant glisser le soleil sur un arc.
+   Crans de 15 minutes (les séances tombent souvent à et quart / moins le quart).
+   Après le coucher du soleil (calculé pour le jour choisi), il devient la lune, avec sa vraie phase.
+   ===================================================================== */
+const DIAL_MIN = 540, DIAL_MAX = 1380, DIAL_STEP = 15;           // de 9 h à 23 h
+const DW = 320, DH = 176, DCX = 160, DBY = 140, DRX = 134, DRY = 106;
+const dialXY = m => { const a = Math.PI * (1 - (m - DIAL_MIN) / (DIAL_MAX - DIAL_MIN)); return [DCX + DRX * Math.cos(a), DBY - DRY * Math.sin(a)]; };
+const ceil15 = m => Math.ceil(m / DIAL_STEP) * DIAL_STEP;
+/* Lever et coucher du soleil (minutes, heure locale), calculés pour l'Île-de-France */
+function sunTimes(d, lat = 48.6, lon = 2.45) {
+  const rad = Math.PI / 180, y = d.getFullYear();
+  const doy = Math.round((Date.UTC(y, d.getMonth(), d.getDate()) - Date.UTC(y, 0, 0)) / 864e5);
+  const g = 2 * Math.PI / 365 * (doy - 0.5);
+  const eqt = 229.18 * (0.000075 + 0.001868 * Math.cos(g) - 0.032077 * Math.sin(g) - 0.014615 * Math.cos(2 * g) - 0.040849 * Math.sin(2 * g));
+  const dec = 0.006918 - 0.399912 * Math.cos(g) + 0.070257 * Math.sin(g) - 0.006758 * Math.cos(2 * g) + 0.000907 * Math.sin(2 * g) - 0.002697 * Math.cos(3 * g) + 0.00148 * Math.sin(3 * g);
+  const cosH = Math.cos(90.833 * rad) / (Math.cos(lat * rad) * Math.cos(dec)) - Math.tan(lat * rad) * Math.tan(dec);
+  const ha = Math.acos(Math.max(-1, Math.min(1, cosH))) / rad;
+  const noon = 720 - 4 * lon - eqt, tz = -new Date(y, d.getMonth(), d.getDate(), 12).getTimezoneOffset();
+  return { rise: noon - 4 * ha + tz, set: noon + 4 * ha + tz };
+}
+/* Phase de la lune : 0 = nouvelle lune, 0,5 = pleine lune */
+function moonPhase(t) { const jd = t.getTime() / 864e5 + 2440587.5; const p = ((jd - 2451550.26) / 29.530588853) % 1; return p < 0 ? p + 1 : p; }
+function moonName(p) {
+  if (p < 0.034 || p >= 0.966) return 'Nouvelle lune';
+  if (p < 0.216) return 'Premier croissant';
+  if (p < 0.284) return 'Premier quartier';
+  if (p < 0.466) return 'Lune gibbeuse croissante';
+  if (p < 0.534) return 'Pleine lune';
+  if (p < 0.716) return 'Lune gibbeuse décroissante';
+  if (p < 0.784) return 'Dernier quartier';
+  return 'Dernier croissant';
+}
+/* Partie éclairée de la lune (vue depuis la France : elle grossit par la droite) */
+function moonPath(p, r) {
+  const c = Math.cos(2 * Math.PI * p), rx = (Math.abs(c) * r).toFixed(2), waxing = p < 0.5, crescent = c > 0;
+  return `M0 ${-r}A${r} ${r} 0 0 ${waxing ? 1 : 0} 0 ${r}A${rx} ${r} 0 0 ${waxing === crescent ? 0 : 1} 0 ${-r}Z`;
+}
+function sunDialHTML(forr, v, dateISO, floor, label) {
+  const ticks = [], labels = [];
+  for (let m = DIAL_MIN; m <= DIAL_MAX; m += DIAL_STEP) {
+    const [x, y] = dialXY(m), h = m % 60 === 0;
+    ticks.push(`<circle class="tick${h ? ' h' : ''}${m < floor ? ' past' : ''}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${h ? 2.4 : 1.3}"/>`);
+    if (h && (m / 60) % 2 === 0 && m > DIAL_MIN && m < DIAL_MAX) {
+      const a = Math.PI * (1 - (m - DIAL_MIN) / (DIAL_MAX - DIAL_MIN));
+      labels.push(`<text class="hl" x="${(DCX + (DRX + 15) * Math.cos(a)).toFixed(1)}" y="${(DBY - (DRY + 13) * Math.sin(a) + 3.5).toFixed(1)}">${m / 60} h</text>`);
+    }
+  }
+  const stars = [[40, 30], [78, 18], [120, 44], [205, 22], [250, 40], [290, 26], [60, 70], [270, 80], [160, 12]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${i % 3 ? 1 : 1.5}"/>`).join('');
+  const rays = [...Array(8)].map((_, i) => { const a = i * Math.PI / 4; return `<line x1="${(17 * Math.cos(a)).toFixed(1)}" y1="${(17 * Math.sin(a)).toFixed(1)}" x2="${(22 * Math.cos(a)).toFixed(1)}" y2="${(22 * Math.sin(a)).toFixed(1)}"/>`; }).join('');
+  return `<div class="sdial" role="slider" tabindex="0" aria-label="Heure de début des séances" aria-valuemin="${floor}" aria-valuemax="${DIAL_MAX}"
+      data-for="${forr}" data-v="${v}" data-date="${dateISO}" data-floor="${floor}" data-label="${esc(label || '')}">
+    <i class="dusk"></i><i class="night"></i>
+    <svg viewBox="0 0 ${DW} ${DH}" aria-hidden="true"><g class="stars">${stars}</g>
+      <path class="arc" d="M${DCX - DRX} ${DBY}A${DRX} ${DRY} 0 0 1 ${DCX + DRX} ${DBY}"/>${ticks.join('')}${labels.join('')}
+      <line class="horizon" x1="6" y1="${DBY}" x2="${DW - 6}" y2="${DBY}"/>
+      <g class="thumb"><circle class="halo" r="24"/><g class="sun"><circle r="13"/>${rays}</g><g class="moon"><circle class="mdark" r="13"/><path class="mlit"/></g></g></svg>
+    <div class="sdlab"></div><div class="sdcap"></div><span class="sdhint">Fais glisser le soleil</span>
+  </div>`;
+}
+function drawDial(el, m) {
+  const d = new Date(el.dataset.date + 'T00:00:00'), { rise, set } = sunTimes(d), label = el.dataset.label;
+  const t = Math.max(DIAL_MIN, Math.min(DIAL_MAX, m)), [x, y] = dialXY(t);
+  el.dataset.v = t;
+  el.querySelector('.thumb').setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+  const night = t >= set || t < rise;
+  el.querySelector('.sun').style.display = night ? 'none' : '';
+  el.querySelector('.moon').style.display = night ? '' : 'none';
+  const dusk = Math.max(0, 1 - Math.abs(t - set) / 70, 1 - Math.abs(t - rise) / 70);
+  const dark = Math.max(0, Math.min(1, (t - set) / 50), Math.min(1, (rise - t) / 50));
+  el.style.setProperty('--dusk', dusk.toFixed(2)); el.style.setProperty('--night', dark.toFixed(2));
+  el.classList.toggle('is-night', dark > 0.45);
+  let cap;
+  if (night) { const p = moonPhase(new Date(d.getTime() + t * 60000)); el.querySelector('.mlit').setAttribute('d', moonPath(p, 13)); cap = moonName(p); }
+  else cap = `Coucher du soleil à ${hm(Math.round(set))}`;
+  el.querySelector('.sdcap').textContent = cap;
+  el.querySelector('.sdhint').textContent = night ? 'Fais glisser la lune' : 'Fais glisser le soleil';
+  el.querySelector('.sdlab').innerHTML = label ? `<b class="sm">${esc(label)}</b>` : `<small>DÈS</small><b>${hm(t)}</b>`;
+  el.setAttribute('aria-valuenow', t); el.setAttribute('aria-valuetext', label || 'dès ' + hm(t));
+}
+/* Dessin des cadrans dès qu'ils apparaissent à l'écran */
+new MutationObserver(() => document.querySelectorAll('.sdial:not([data-ok])').forEach(el => { el.dataset.ok = '1'; drawDial(el, +el.dataset.v); }))
+  .observe(document.body, { childList: true, subtree: true });
+/* Garder la position de défilement de la feuille quand on la redessine */
+function keepSheet(fn) {
+  const sc = (document.querySelector('.sheet') || {}).scrollTop || 0, foc = document.activeElement && document.activeElement.classList.contains('sdial');
+  fn();
+  const s = document.querySelector('.sheet'); if (s) s.scrollTop = sc;
+  if (foc) document.querySelector('.sdial')?.focus();
+}
+function dialPick(el, m) {   // pendant le glissement
+  el.dataset.label = '';
+  drawDial(el, m);
+  const act = el.dataset.for === 'set' ? 'sethour' : 'vdispo';
+  document.querySelectorAll(`[data-act=${act}]`).forEach(c => { c.classList.remove('on'); c.setAttribute('aria-pressed', 'false'); });
+  if (el.dataset.for === 'valid') VAL.dispo = m;
+}
+function dialCommit(el, m) { // quand on lâche
+  if (el.dataset.for === 'set') { S.hour = m; S.playing = null; S.tab = 'films'; keepSheet(render); }
+  else VAL.dispo = m;
+}
+function dialValueAt(el, cx, cy) {
+  const r = el.querySelector('svg').getBoundingClientRect();
+  const X = ((cx - r.left) * DW / r.width - DCX) / DRX, Y = (DBY - (cy - r.top) * DH / r.height) / DRY;
+  const a = Math.atan2(Math.max(Y, 0.0001), X), u = 1 - a / Math.PI;
+  const m = DIAL_MIN + Math.round(u * (DIAL_MAX - DIAL_MIN) / DIAL_STEP) * DIAL_STEP;
+  return Math.max(+el.dataset.floor, Math.min(DIAL_MAX, m));
+}
+let _dial = null, _dialKeyT = null;
+function dialMove(e) {
+  const m = dialValueAt(_dial.el, e.clientX, e.clientY);
+  if (m === _dial.last) return;
+  if (_dial.last != null && navigator.vibrate) { try { navigator.vibrate(4); } catch (err) {} }   // un petit « cran »
+  _dial.last = m; dialPick(_dial.el, m);
+}
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest && e.target.closest('.sdial'); if (!el) return;
+  e.preventDefault(); el.focus({ preventScroll: true });
+  _dial = { el, id: e.pointerId, last: null }; el.classList.add('drag');
+  try { el.setPointerCapture(e.pointerId); } catch (err) {}
+  dialMove(e);
+});
+document.addEventListener('pointermove', e => { if (_dial && e.pointerId === _dial.id) { e.preventDefault(); dialMove(e); } }, { passive: false });
+const dialEnd = e => { if (!_dial || e.pointerId !== _dial.id) return; const { el, last } = _dial; _dial = null; el.classList.remove('drag'); if (last != null) dialCommit(el, last); };
+document.addEventListener('pointerup', dialEnd); document.addEventListener('pointercancel', dialEnd);
+/* Au clavier : ← → par 15 min, Page ↑ ↓ par heure */
+document.addEventListener('keydown', e => {
+  const el = e.target.closest && e.target.closest('.sdial'); if (!el) return;
+  const step = { ArrowLeft: -15, ArrowDown: -15, ArrowRight: 15, ArrowUp: 15, PageDown: -60, PageUp: 60 }[e.key];
+  const to = e.key === 'Home' ? +el.dataset.floor : e.key === 'End' ? DIAL_MAX : step != null ? Math.max(+el.dataset.floor, Math.min(DIAL_MAX, (el.dataset.label ? +el.dataset.v : +el.dataset.v) + step)) : null;
+  if (to == null) return;
+  e.preventDefault(); e.stopPropagation();
+  dialPick(el, to);
+  clearTimeout(_dialKeyT); _dialKeyT = setTimeout(() => dialCommit(el, to), 500);
+}, true);
 const listKey = () => `cine:${S.cin}:${iso(DAYS[S.day])}`;
 const getList = () => store.get(listKey(), { kept: [], removed: [], hist: [] });
 const saveList = L => store.set(listKey(), L);
@@ -624,24 +781,22 @@ function removedHTML(films, act, open) {
     (open ? `<div class="list">${films.map(f => `<div class="row"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><div class="grow">${esc(f.t)}${f.d ? ' · ' + fmtDur(f.d) : ''}</div><button class="smallbtn" data-act="${act}" data-v="${esc(f.id)}">Garder</button></div>`).join('')}</div>` : '');
 }
 /* Heures proposées au moment de valider */
-function dispoOptions(today) {
-  const now = today ? nowMin() : 0;
-  const o = [{ v: now, l: now ? 'Dès maintenant' : 'Peu importe' }];
-  for (const h of [840, 960, 1020, 1080, 1140, 1200, 1260, 1320]) if (h > now + 15) o.push({ v: h, l: 'Dès ' + hm(h) });
-  return o;
-}
 const VAL = { prenom: null, dispo: null, abs: null };   // la feuille « Valider » (prénom + heure)
 function validSheetBody(group) {
-  const opts = dispoOptions(group ? gToday() : S.day === 0);
+  const today = group ? gToday() : S.day === 0, now = today ? nowMin() : 0;
+  const floor = today ? Math.min(DIAL_MAX, ceil15(now)) : DIAL_MIN, dateISO = group ? G.doc.jourISO : iso(DAYS[S.day]);
   if (VAL.prenom == null) VAL.prenom = S.prenom;
-  if (VAL.dispo == null || !opts.some(o => o.v === VAL.dispo)) {
+  if (VAL.dispo == null) {
     const pref = group ? (G.me && G.me.dispo) : (S.hour > 0 ? S.hour : null);
-    VAL.dispo = opts.some(o => o.v === pref) ? pref : opts[0].v;
+    VAL.dispo = pref > 0 && pref >= floor && pref % DIAL_STEP === 0 ? pref : now;
   }
+  if (VAL.dispo && VAL.dispo % DIAL_STEP === 0 && VAL.dispo < floor) VAL.dispo = now;
+  const free = !VAL.dispo || VAL.dispo === now, freeLabel = today ? 'Dès maintenant' : 'Peu importe';
   return `<h2>${group ? 'Valider mes choix' : 'Valider et inviter mes potes'}</h2>
     <label class="field">Ton prénom<input id="v-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(VAL.prenom)}" placeholder="Ex. : ${group ? 'Julie' : 'Seb'}"></label>
     <div class="lbl">TU ES DISPO À PARTIR DE QUAND ?</div>
-    <div class="chips2">${opts.map(o => `<button class="dchip${o.v === VAL.dispo ? ' on' : ''}" data-act="vdispo" data-v="${o.v}" aria-pressed="${o.v === VAL.dispo}">${o.l}</button>`).join('')}</div>
+    <div class="chips2"><button class="dchip${free ? ' on' : ''}" data-act="vdispo" data-v="${now}" aria-pressed="${free}">${freeLabel}</button></div>
+    ${sunDialHTML('valid', free ? (today ? now : DIAL_MIN) : VAL.dispo, dateISO, floor, free ? freeLabel : '')}
     <p class="note" style="margin-top:12px">${group ? 'Tes potes verront ton prénom et tes choix. Tu pourras encore les modifier.' : 'Ta séance va être créée : il ne restera plus qu’à envoyer le lien à tes potes.'}</p>
     <button class="big ink" data-act="validok">${group ? 'Valider et voir les résultats' : 'Valider'}</button>`;
 }
@@ -1003,6 +1158,15 @@ function showInstallHelp() {
   document.body.appendChild(o);
 }
 
+/* Réglage de l'heure : « Maintenant », « Toute la journée », ou le soleil */
+function setHourHTML() {
+  const today = S.day === 0, floor = today ? Math.min(DIAL_MAX, ceil15(nowMin())) : DIAL_MIN;
+  const now = today && S.hour === -1, all = S.hour === 0 || (S.hour === -1 && !today);
+  const chip = (v, l, on) => `<button class="dchip${on ? ' on' : ''}" data-act="sethour" data-v="${v}" aria-pressed="${on}">${l}</button>`;
+  const v = now ? nowMin() : all ? (today ? floor : DIAL_MIN) : Math.max(floor, S.hour);
+  return `<div class="chips2">${today ? chip(-1, 'Maintenant', now) : ''}${chip(0, 'Toute la journée', all)}</div>` +
+    sunDialHTML('set', v, iso(DAYS[S.day]), floor, now ? 'Maintenant' : all ? 'Toute la journée' : '');
+}
 /* Cinémas proposés dans les réglages : celui en cours, puis les favoris */
 const setCinemas = () => { const cur = curCinema(), F = favs(); return [...(cur && !F.some(c => c.id === cur.id) ? [cur] : []), ...F]; };
 /* ---------- Feuilles (réglages, partage, validation) ---------- */
@@ -1016,7 +1180,7 @@ function sheetHTML() {
       <button class="opt find" data-act="sheet" data-v="cinpick">${ICON.search} Chercher un autre cinéma</button>
       <div class="lbl">JOUR</div><div class="chips2">${DAYS.map((d, i) => `<button class="dchip${i === S.day ? ' on' : ''}" data-act="setday" data-v="${i}" ${dayOpen(i) ? '' : 'disabled'}>${dayShort(i)}</button>`).join('')}</div>
       <p class="note" style="margin-top:8px">Les cinémas publient le programme de la semaine suivante le mardi.</p>
-      <div class="lbl">SÉANCES À PARTIR DE</div><div class="chips2">${HOURS.filter(h => !(h.v === -1 && S.day !== 0)).map(h => `<button class="dchip${h.v === S.hour ? ' on' : ''}" data-act="sethour" data-v="${h.v}">${h.l}</button>`).join('')}</div>
+      <div class="lbl">SÉANCES À PARTIR DE</div>${setHourHTML()}
       <button class="big ink" data-act="close" style="margin-top:16px">Voir les films</button>
       <button class="linkbtn instl2" data-act="install" style="align-self:center;width:100%">Installer Pot’corn sur mon téléphone</button>`;
   } else if (S.sheet === 'share') {
@@ -1117,7 +1281,7 @@ function thumbBtn(f) {
 const G = { on: false };
 const AVC = ['#F28C28', '#2BB3A3', '#F4EFE6', '#E5484D', '#C9A7F5', '#F5D547', '#7CC4F5', '#F59AC0'];
 const hm = m => `${Math.floor(m / 60)} h${m % 60 ? ' ' + String(m % 60).padStart(2, '0') : ''}`;
-const fromText = m => !m ? 'toute la journée' : m % 30 ? 'dès maintenant' : 'dès ' + hm(m);
+const fromText = m => !m ? 'toute la journée' : m % 15 ? 'dès maintenant' : 'dès ' + hm(m);
 const isCreator = () => !!(G.doc && G.doc.creator === G.uid);
 const gToday = () => G.doc.jourISO === iso(new Date());
 /* Heure de fin : film choisi terminé (+ 30 min de marge), sinon minuit le jour de la séance */
@@ -1384,9 +1548,9 @@ function gSelHTML(left) {
   return h;
 }
 function inviteHref() {
-  const D = G.doc, n = D.films.length;
+  const D = G.doc;
   const txt = `On se fait un ciné ? 🍿\n\n${D.auteur} lance une séance entre potes au ${D.cinema.name}, ${D.jour}.\n` +
-    `Choisis tes films parmi les ${n} à l’affiche (bandes-annonces comprises), puis valide : tu verras ce que les autres ont choisi, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n` +
+    `Choisis tes films favoris à l’affiche. Pot’corn vous aide à trouver le film qui met tout le monde d’accord. Pas besoin de compte.\n` +
     `Pas dispo ? Tu peux aussi le dire en un clic.\n\n👉 ${groupLink()}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
@@ -1723,8 +1887,8 @@ document.addEventListener('click', e => {
     case 'introNext': introStep(1); break;
     case 'introEnd': closeIntro(); break;
     case 'install': installApp(); break;
-    case 'setday': S.day = Number(v); if (S.day !== 0 && S.hour === -1) S.hour = 0; S.playing = null; S.tab = 'films'; render(); break;
-    case 'sethour': S.hour = Number(v); S.playing = null; S.tab = 'films'; render(); break;
+    case 'setday': S.day = Number(v); if (S.day !== 0 && S.hour === -1) S.hour = 0; S.playing = null; S.tab = 'films'; keepSheet(render); break;
+    case 'sethour': S.hour = Number(v); S.playing = null; S.tab = 'films'; keepSheet(render); break;
     case 'nextday': S.day = Math.min(S.day + 1, LIMIT); if (S.hour === -1) S.hour = 0; render(); break;
     case 'allday': S.hour = 0; render(); break;
     case 'decide': decide(v); break;
@@ -1741,7 +1905,11 @@ document.addEventListener('click', e => {
     case 'closevideo': b.closest('.vid')?.remove(); if (G.on && G.tab === 'res') onGroupChange(); break;
     /* Validation (prénom + heure) */
     case 'valid': VAL.dispo = null; if (G.on) { G.sheet = 'valid'; renderGroup(); } else { S.sheet = 'valid'; render(); } break;
-    case 'vdispo': VAL.dispo = Number(v); document.querySelectorAll('[data-act=vdispo]').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); break;
+    case 'vdispo': {
+      VAL.dispo = Number(v); document.querySelectorAll('[data-act=vdispo]').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); });
+      const dl = document.querySelector('.sdial[data-for=valid]'); if (dl) { dl.dataset.label = b.textContent; drawDial(dl, VAL.dispo || DIAL_MIN); }
+      break;
+    }
     case 'validok': if (G.on) gValidate(b); else createGroup(b); break;
     /* Séance entre potes */
     case 'gdecide': gDecide(v); break;
