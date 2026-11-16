@@ -233,6 +233,13 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .sheet .dchip{color:var(--ink);border-color:#BDB6A8;background:#fff}
 .sheet .dchip.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .sheet .dchip:disabled{opacity:.35}
+.linkbtn.danger{color:#ff8a8d;align-self:center;margin-top:4px}
+.big.red{background:var(--red);color:#fff}
+.sheet .ghost{color:var(--ink);border-color:#BDB6A8}
+.over{text-align:center;padding:40px 6px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.over h2{font-family:'Rubik Mono One',sans-serif;font-size:20px;margin:0}
+.over p{margin:0;color:#ddd;font-size:15px;line-height:1.5}
+.over b{color:var(--or)}
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 </style>
 </head>
@@ -270,7 +277,8 @@ const HOURS = [
 const $app = document.getElementById('app');
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
 };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const ytId = yt => String(yt || '').replace(/[^A-Za-z0-9_-]/g, '');
@@ -423,7 +431,7 @@ function setLine() {
 }
 function resumeHTML() {
   const lg = store.get('cine:lastGroup', null);
-  if (!lg || !lg.code || lg.jour < iso(new Date())) return '';
+  if (!lg || !lg.code || lg.jour < iso(new Date()) || (lg.fin && lg.fin < Date.now())) return '';
   return `<a class="resume" href="${base()}?g=${esc(lg.code)}">${ICON.group}<span>Tu as une séance entre potes en cours</span><b>Voir ›</b></a>`;
 }
 function selGrid(films, coeur, rmAct) {
@@ -746,7 +754,17 @@ const hm = m => `${Math.floor(m / 60)} h${m % 60 ? ' ' + String(m % 60).padStart
 const fromText = m => !m ? 'toute la journée' : m % 30 ? 'dès maintenant' : 'dès ' + hm(m);
 const isCreator = () => !!(G.doc && G.doc.creator === G.uid);
 const gToday = () => G.doc.jourISO === iso(new Date());
-const ended = () => G.doc && G.doc.jourISO < iso(new Date());
+/* Heure de fin : film choisi terminé (+ 30 min de marge), sinon minuit le jour de la séance */
+function endTime() {
+  const D = G.doc, day = new Date(D.jourISO + 'T00:00:00').getTime(), dc = D.decision;
+  if (dc) { const f = filmById(dc.filmId); return day + (toMin(dc.h) + ((f && f.d) || 120) + 30) * 60000; }
+  return day + 24 * 3600000;
+}
+const ended = () => !!(G.doc && Date.now() > endTime());
+const isCancelled = () => !!(G.doc && G.doc.annulee);
+function rememberGroup() {
+  store.set('cine:lastGroup', { code: G.code, jour: G.doc.jourISO, cin: G.doc.cinema.id, fin: G.doc.decision ? endTime() : null });
+}
 const groupLink = () => base() + '?g=' + G.code;
 const gKey = () => 'cine:g:' + G.code;
 const filmById = id => G.doc.films.find(f => f.id === id);
@@ -823,7 +841,7 @@ async function initGroup(code, tab) {
     G.rouN = G.doc.roulette ? G.doc.roulette.n : 0;
     G.step = 'ok';
     G.tab = tab || (G.joined || ended() ? 'res' : 'films');
-    store.set('cine:lastGroup', { code, jour: G.doc.jourISO });
+    if (!isCancelled() && !ended()) rememberGroup();
     fb.fs.onSnapshot(ref, s => { if (s.exists()) { G.doc = s.data(); onGroupChange(); } });
     // On attend les choix des autres avant d'afficher les cartes (ordre et bandeau « gardé par »)
     await new Promise(done => {
@@ -849,6 +867,8 @@ function potesList() {
 }
 function onGroupChange() {
   if (!G.doc || G.step !== 'ok') return;
+  if (isCancelled() || ended()) { if (!G.over) renderGroup(); return; }
+  const lg = store.get('cine:lastGroup', null); if (lg && lg.code === G.code) rememberGroup();
   const r = G.doc.roulette;
   if (r && r.n !== G.rouN) { G.rouN = r.n; playRoulette(r); }
   const d = document.getElementById('gdec'); if (d) d.innerHTML = gDecHTML();
@@ -866,7 +886,7 @@ async function saveMe() {
 /* Avant validation : sur le téléphone ; après : envoyé aux potes */
 function saveMine() {
   if (G.joined) return saveMe().catch(e => { console.error(e); toast('Connexion perdue : ton choix sera renvoyé au prochain film'); });
-  store.set(gKey(), { kept: G.me.kept, removed: G.me.removed, coeur: G.me.coeur });
+  store.set(gKey(), { kept: G.me.kept, removed: G.me.removed, coeur: G.me.coeur, jour: G.doc.jourISO });
 }
 async function gValidate(btn) {
   const prenom = String(VAL.prenom || '').trim();
@@ -896,6 +916,7 @@ function gDeck() {
 function renderGroup() {
   if (G.step === 'load') { $app.innerHTML = BRAND + `<div class="empty"><h2>Chargement…</h2><p>On récupère la séance entre potes.</p></div>`; return; }
   if (G.step === 'err') { $app.innerHTML = BRAND + `<div class="empty"><h2>Oups</h2><p>${esc(G.error)}</p><a class="big or" href="${base()}">Voir les séances</a></div>`; return; }
+  if (isCancelled() || ended()) return renderOver();
   const { all, rest } = gDeck(), tab = G.tab;
   const nav = navHTML(tab, { okFilms: G.joined || (all.length > 0 && !rest.length), okSel: G.joined, cnt: G.me.kept.length, lockRes: !G.joined && !ended() });
   const kick = tab === 'films' ? stepKick(1, 'Je choisis mes films')
@@ -987,6 +1008,7 @@ function gSelHTML(left) {
     h += `<div class="ctabar"><button class="big cream" data-act="tab" data-v="res">Voir les résultats ›</button>
       <button class="linkbtn" data-act="tab" data-v="films">Modifier mes choix</button></div>`;
     if (!isCreator()) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
+    else h += cancelLink();
   }
   return h;
 }
@@ -1064,9 +1086,8 @@ function gResHTML() {
       <div class="pl">${p.coeur && filmById(p.coeur) ? `${ICON.hs} <b>${esc(filmById(p.coeur).t)}</b>${kept.length ? '<br>' : ''}` : ''}${kept.length ? kept.map(esc).join(' · ') : p.coeur ? '' : 'Aucun film gardé'}</div></div>`;
   }).join('')}</div>`;
 
-  if (!ended()) {
-    if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
-  } else h += `<p class="msg">Cette séance est passée.</p>`;
+  if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
+  if (isCreator()) h += cancelLink();
   h += `<a class="ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff" href="${base()}">Voir toutes les séances</a>`;
   return h;
 }
@@ -1076,7 +1097,12 @@ function gSheetHTML() {
   if (!G.sheet) return '';
   let body = '';
   if (G.sheet === 'valid') body = validSheetBody(true);
-  else {
+  else if (G.sheet === 'cancel') {
+    body = `<h2>Annuler la séance ?</h2>
+      <p class="note">Tes potes verront que la séance est annulée, et tous les choix (les tiens et les leurs) seront effacés. Tu ne pourras pas revenir en arrière.</p>
+      <button class="big red" data-act="gcancelok">Oui, tout annuler</button>
+      <button class="ghost" data-act="close" style="margin-top:8px">Non, garder la séance</button>`;
+  } else {
     const r = gResults().rows.find(x => x.f.id === G.sheet.slice(2)); if (!r) { G.sheet = null; return ''; }
     body = `<h2>C’est décidé ?</h2>
       <p class="note"><b>${esc(r.f.t)}</b> · ${esc(G.doc.jour)}<br>Choisis la séance : tout le groupe verra le choix, avec le lien pour réserver.</p>` +
@@ -1097,6 +1123,47 @@ async function gSetDecision(i) {
 async function gUndecide() {
   try { const fb = await getFB(); await fb.fs.updateDoc(fb.fs.doc(fb.db, 'seances', G.code), { decision: null }); }
   catch (e) { console.error(e); toast('Impossible d’annuler le choix.'); }
+}
+
+/* ----- Annuler la séance (organisateur) et remise à zéro ----- */
+function cancelLink() {
+  return `<button class="linkbtn danger" data-act="gcancel">Annuler la séance</button>`;
+}
+async function cancelGroup(btn) {
+  btn.disabled = true; btn.textContent = 'Annulation…';
+  try {
+    const fb = await getFB();
+    await fb.fs.updateDoc(fb.fs.doc(fb.db, 'seances', G.code), { annulee: true, decision: null, roulette: null });
+    G.doc = { ...G.doc, annulee: true, decision: null, roulette: null }; G.sheet = null;
+    renderGroup(); window.scrollTo(0, 0);
+  } catch (e) {
+    console.error(e); toast('Impossible d’annuler la séance. Vérifie ta connexion.');
+    btn.disabled = false; btn.textContent = 'Oui, tout annuler';
+  }
+}
+/* Séance annulée ou passée : on efface les choix (sur le téléphone et en ligne) et on repart de zéro */
+async function resetGroup() {
+  if (G.cleaned) return; G.cleaned = true;
+  const lg = store.get('cine:lastGroup', null);
+  if (lg && lg.code === G.code) store.del('cine:lastGroup');
+  store.del(`cine:${G.doc.cinema.id}:${G.doc.jourISO}`);
+  store.del(gKey());
+  try {
+    const fb = await getFB();
+    const ids = isCreator() ? [...new Set([...Object.keys(G.potes), G.uid])] : G.joined ? [G.uid] : [];
+    await Promise.all(ids.map(uid => fb.fs.deleteDoc(fb.fs.doc(fb.db, 'seances', G.code, 'potes', uid)).catch(() => {})));
+  } catch (e) { console.warn(e); }
+}
+function renderOver() {
+  G.over = true; resetGroup();
+  const D = G.doc, dc = D.decision, cancelled = isCancelled();
+  $app.innerHTML = BRAND + `<div class="over">
+    <h2>${cancelled ? 'Séance annulée' : 'Séance terminée 🍿'}</h2>
+    <p>${cancelled
+      ? `${isCreator() ? 'Tu as annulé' : esc(D.auteur) + ' a annulé'} la séance du ${esc(D.jour)} au ${esc(D.cinema.short)}.`
+      : dc ? `Le film choisi pour le ${esc(D.jour)} : <b>${esc(dc.t)}</b> à ${esc(dc.h)}, au ${esc(D.cinema.short)}.` : `La séance du ${esc(D.jour)} au ${esc(D.cinema.short)} est passée.`}</p>
+    <p>Tous les choix ont été remis à zéro.</p>
+    <a class="big or" href="${base()}">Choisir un nouveau film</a></div>` + CREDIT;
 }
 
 /* D : la roulette (le résultat est partagé : tout le monde voit la même animation) */
@@ -1203,6 +1270,8 @@ document.addEventListener('click', e => {
     case 'gsheet': G.sheet = 'd:' + v; renderGroup(); break;
     case 'gdecideok': gSetDecision(Number(v)); break;
     case 'gundecide': gUndecide(); break;
+    case 'gcancel': G.sheet = 'cancel'; renderGroup(); break;
+    case 'gcancelok': cancelGroup(b); break;
     case 'groulette': spinRoulette(); break;
     case 'roulclose': b.closest('.roul')?.remove(); onGroupChange(); break;
   }
@@ -1230,6 +1299,21 @@ document.addEventListener('keydown', e => {
 window.addEventListener('popstate', () => location.reload());
 
 /* ---------- Démarrage ---------- */
+(function purgeOld() {
+  const t = iso(new Date());
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i); if (!k) continue;
+      const m = /^cine:[A-Za-z0-9]+:(\d{4}-\d{2}-\d{2})$/.exec(k);
+      if (m && m[1] < t) localStorage.removeItem(k);                       // choix d'un jour passé
+      if (/^cine:g:/.test(k)) { const v = store.get(k, null); if (!v || !v.jour || v.jour < t) localStorage.removeItem(k); }
+    }
+    const lg = store.get('cine:lastGroup', null);
+    if (lg && (lg.jour < t || (lg.fin && lg.fin < Date.now()))) {        // séance terminée : remise à zéro
+      store.del('cine:lastGroup'); if (lg.cin) store.del(`cine:${lg.cin}:${lg.jour}`);
+    }
+  } catch (e) {}
+})();
 (() => {
   const code = (new URLSearchParams(location.search).get('g') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
   if (code) { initGroup(code); return; }
