@@ -448,9 +448,12 @@ const store = {
   del(k) { try { localStorage.removeItem(k); } catch (e) {} }
 };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const ytId = yt => String(yt || '').replace(/[^A-Za-z0-9_-]/g, '');
-const thumb = yt => `https://i.ytimg.com/vi/${ytId(yt)}/hqdefault.jpg`;
-const embed = yt => `https://www.youtube-nocookie.com/embed/${ytId(yt)}?autoplay=1&playsinline=1&rel=0`;
+/* Bandes-annonces : YouTube, ou Dailymotion (« dm:… », vidéos publiées par AlloCiné) */
+const isDm = yt => String(yt || '').startsWith('dm:');
+const ytId = yt => String(yt || '').replace(/^dm:/, '').replace(/[^A-Za-z0-9_-]/g, '');
+const thumb = yt => isDm(yt) ? `https://www.dailymotion.com/thumbnail/video/${ytId(yt)}` : `https://i.ytimg.com/vi/${ytId(yt)}/hqdefault.jpg`;
+const embed = yt => isDm(yt) ? `https://www.dailymotion.com/embed/video/${ytId(yt)}?autoplay=1&queue-enable=false&ui-start-screen-info=false`
+  : `https://www.youtube-nocookie.com/embed/${ytId(yt)}?autoplay=1&playsinline=1&rel=0`;
 const toMin = h => { const [a, b] = h.split(':').map(Number); return a * 60 + b; };
 const fmtDur = m => m >= 60 ? `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}` : `${m} min`;
 const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;

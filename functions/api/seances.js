@@ -27,7 +27,7 @@ const TZ = 'Europe/Paris';
 const RECHECK_MS = 60 * 60 * 1000;   // le mardi, au plus une vérification par heure
 const DAYS = 8;                      // aujourd'hui + 7 jours
 const TMDB_IMG = 'https://image.tmdb.org/t/p/';
-const CACHE_VERSION = 'v3';   // v3 : formats des séances (IMAX, 4DX…)
+const CACHE_VERSION = 'v4';   // v4 : bandes-annonces vérifiées (TMDB plus strict, puis AlloCiné)
 // Offre gratuite Cloudflare : 50 appels externes maximum par visite. On en garde 4 de marge.
 const BUDGET = 46;
 const ALLO_MAX = 30;                       // part réservée à AlloCiné (8 jours + pages en plus)                // à changer si le format des données change
@@ -197,56 +197,91 @@ async function ytSearch(f, key, ctx) {
   const r = await get(u.toString(), { Accept: 'application/json' }, 6000, ctx);
   if (!r.ok) return null;   // quota dépassé ou clé refusée : on réessaiera plus tard
   const j = await r.json();
-  const words = plain(f.t).split(' ').filter(w => w.length > 2);
+  const title = plain(f.t), y = yearOf(f.sortie);
+  if (!title) return { yt: null };
+  const whole = new RegExp('(^| )' + title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '( |$)');
   const items = (j.items || []).filter(i => i.id && i.id.videoId && i.snippet);
-  // une vidéo qui parle de bande-annonce et qui reprend un mot du titre du film
-  const good = items.find(i => { const t = plain(i.snippet.title); return /bande|trailer|teaser/.test(t) && (!words.length || words.some(w => t.includes(w))); });
+  // le titre COMPLET du film, le mot bande-annonce, pas une série, et une vidéo récente
+  const good = items.find(i => {
+    const t = plain(i.snippet.title), pub = yearOf(i.snippet.publishedAt);
+    return /bande|trailer|teaser/.test(t) && whole.test(t) && !/saison|season|episode|serie/.test(t) && (!y || !pub || pub >= y - 1);
+  });
   return { yt: good ? good.id.videoId : null };
 }
-// Cherche la bande-annonce d'un film (3 appels TMDB au plus, puis YouTube si besoin). Renvoie null si le budget
-// d'appels de cette visite est épuisé : le film sera traité à la visite suivante.
-async function tmdbFor(f, token, store, ctx) {
-  const key = 'film2-' + f.id;   // « film2 » : ignore les recherches ratées enregistrées par l'ancienne version
-  if (store) {
-    const c = await store.get(key).catch(() => null);
-    if (c && Date.now() - c.at < 7 * 86400000) {
-      if (c.yt || c.ytTried || !ctx.ytKey) return c;
-      try {   // déjà cherché sur TMDB sans succès : on essaie YouTube
-        const y = await ytSearch(f, ctx.ytKey, ctx);
-        if (!y) return c;
-        const info = { ...c, yt: y.yt, ytTried: true, ytFrom: y.yt ? 'youtube' : null };
-        await store.setJSON(key, info, 30 * 86400).catch(() => {});
-        return info;
-      } catch (e) { return null; }
-    }
+const yearOf = d => (d && /^\d{4}/.test(String(d))) ? +String(d).slice(0, 4) : null;
+/* Le bon film sur TMDB : même titre (ou titre qui contient l'autre) et année de sortie proche.
+   Sans année dans la recherche, on exige le titre exact : sinon on risque un autre film du même nom. */
+function pickMovie(results, f, strict) {
+  const t = plain(f.t), y = yearOf(f.sortie);
+  if (!t) return null;
+  const nearYear = m => !y || !m.release_date || Math.abs(yearOf(m.release_date) - y) <= 1;
+  const same = m => plain(m.title) === t || plain(m.original_title) === t;
+  const close = m => { const mt = plain(m.title); return mt.length > 2 && (mt.includes(t) || t.includes(mt)); };
+  return (results || []).find(m => same(m) && nearYear(m)) || (!strict && (results || []).find(m => close(m) && nearYear(m))) || null;
+}
+/* Bande-annonce publiée par AlloCiné sur la fiche du film (vidéo Dailymotion d'AlloCiné : c'est forcément le bon film) */
+const decodeHtml = s => s.replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+async function alloTrailer(f, ctx) {
+  if (!/fichefilm_gen_cfilm=\d+/.test(f.allo || '')) return { dm: null };
+  const r = await get(f.allo, { 'User-Agent': UA, 'Accept': 'text/html', 'Accept-Language': 'fr-FR,fr;q=0.9' }, 8000, ctx);
+  if (!r.ok) return { dm: null };
+  const html = await r.text();
+  let vids = [];
+  for (const m of html.matchAll(/data-model="(\{&quot;videos&quot;[^"]*)"/g)) {
+    try { vids = vids.concat(JSON.parse(decodeHtml(m[1])).videos || []); } catch (e) { /* bloc illisible : on passe au suivant */ }
   }
+  // seulement les vidéos de CE film (AlloCiné indique le film principal de chaque vidéo)
+  vids = vids.filter(v => v && /^[a-z0-9]+$/i.test(String(v.idDailymotion || '')) && (!v.metas || !v.metas.id_main_movie || String(v.metas.id_main_movie) === String(f.id)));
+  const trailer = v => v.file_type === 'TRAILER' || /bande[- ]annonce|teaser|trailer/i.test(v.title || '');
+  const v = vids.find(v => trailer(v) && /\bVF\b/.test(v.title || '')) || vids.find(trailer) || null;
+  if (!v) return { dm: null };
+  const img = typeof v.image === 'string' ? (/^https:\/\//.test(v.image) ? v.image : /^\/img\//.test(v.image) ? 'https://fr.web.img6.acsta.net' + v.image : null) : null;
+  return { dm: String(v.idDailymotion), img };
+}
+// Cherche la bande-annonce d'un film : TMDB (le bon film seulement), sinon la fiche AlloCiné, sinon YouTube.
+// Chaque étape est gardée en mémoire. Renvoie null si le budget d'appels de cette visite est épuisé :
+// le film sera terminé à la visite suivante.
+async function tmdbFor(f, token, store, ctx) {
+  const key = 'film3-' + f.id;   // « film3 » : on refait toutes les recherches avec les nouvelles règles
+  let info = store ? await store.get(key).catch(() => null) : null;
+  if (info && !info.yt && Date.now() - info.at > 7 * 86400000) info = null;   // pas trouvé il y a plus d'une semaine : on réessaie
+  const save = () => store ? store.setJSON(key, info, 30 * 86400).catch(() => {}) : null;
   try {
-    const year = f.sortie ? String(f.sortie).slice(0, 4) : '';
-    let found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', region: 'FR', include_adult: 'false', primary_release_year: year }, ctx);
-    if (!found?.results?.length && year) found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', include_adult: 'false' }, ctx);
-    const m = found?.results?.[0];
-    const info = { at: Date.now(), yt: null, backdrop: null, poster: null };
-    if (m) {
-      info.backdrop = m.backdrop_path ? TMDB_IMG + 'w780' + m.backdrop_path : null;
-      info.poster = m.poster_path ? TMDB_IMG + 'w500' + m.poster_path : null;
-      const fr = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'fr-FR' }, ctx);
-      info.yt = pickTrailer(fr?.results);
-      if (!info.yt) { const en = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'en-US' }, ctx); info.yt = pickTrailer(en?.results); }
+    if (!info) {
+      const year = f.sortie ? String(f.sortie).slice(0, 4) : '';
+      info = { at: Date.now(), yt: null, backdrop: null, poster: null };
+      let found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', region: 'FR', include_adult: 'false', primary_release_year: year }, ctx);
+      let m = pickMovie(found?.results, f, false);
+      if (!m) { found = await tmdbRequest('/search/movie', token, { query: f.t, language: 'fr-FR', include_adult: 'false' }, ctx); m = pickMovie(found?.results, f, true); }
+      if (m) {
+        info.tmdbId = m.id;
+        info.backdrop = m.backdrop_path ? TMDB_IMG + 'w780' + m.backdrop_path : null;
+        info.poster = m.poster_path ? TMDB_IMG + 'w500' + m.poster_path : null;
+        const fr = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'fr-FR' }, ctx);
+        info.yt = pickTrailer(fr?.results);
+        if (!info.yt) { const en = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'en-US' }, ctx); info.yt = pickTrailer(en?.results); }
+      }
+      await save();
     }
-    if (!info.yt && ctx.ytKey) {
+    if (!info.yt && !info.alloTried) {
+      const a = await alloTrailer(f, ctx);
+      info.alloTried = true;
+      if (a.dm) { info.yt = 'dm:' + a.dm; info.ytFrom = 'allocine'; if (!info.backdrop && a.img) info.backdrop = a.img; }
+      await save();
+    }
+    if (!info.yt && !info.ytTried && ctx.ytKey) {
       const y = await ytSearch(f, ctx.ytKey, ctx);
-      if (y) { info.yt = y.yt; info.ytTried = true; info.ytFrom = y.yt ? 'youtube' : null; }
+      if (y) { info.ytTried = true; info.yt = y.yt; info.ytFrom = y.yt ? 'youtube' : null; await save(); }
     }
-    if (store) await store.setJSON(key, info).catch(() => {});
     return info;
-  } catch (e) { return null; }   // budget épuisé ou TMDB indisponible
+  } catch (e) { if (info) await save(); return null; }   // budget épuisé ou service indisponible
 }
 // Ajoute les bandes-annonces aux films qui n'en ont pas encore été cherchées, tant que le budget le permet.
-const needsWork = (f, ctx) => !f.tmdbDone || (ctx.ytKey && !f.yt && !f.ytTried);
+const needsWork = (f, ctx) => !f.tmdbDone || (!f.yt && (!f.alloTried || (ctx.ytKey && !f.ytTried)));
 async function enrich(films, token, store, ctx) {
   const todo = films.filter(f => needsWork(f, ctx));
   while (todo.length) {
-    const size = Math.min(5, Math.floor((BUDGET - ctx.used) / 3), todo.length);
+    const size = Math.min(5, Math.floor((BUDGET - ctx.used) / 5), todo.length);
     if (size < 1) break;
     const batch = todo.splice(0, size);
     const infos = await Promise.all(batch.map(f => tmdbFor(f, token, store, ctx)));
@@ -254,6 +289,7 @@ async function enrich(films, token, store, ctx) {
       const info = infos[i]; if (!info) return;
       f.yt = info.yt || null; f.backdrop = info.backdrop || null; f.poster = f.poster || info.poster || null; f.tmdbDone = true;
       if (info.ytTried) f.ytTried = true;
+      if (info.alloTried) f.alloTried = true;
     });
     if (infos.some(x => !x)) break;
   }
