@@ -27,7 +27,7 @@ const TZ = 'Europe/Paris';
 const RECHECK_MS = 60 * 60 * 1000;   // le mardi, au plus une vérification par heure
 const DAYS = 8;                      // aujourd'hui + 7 jours
 const TMDB_IMG = 'https://image.tmdb.org/t/p/';
-const CACHE_VERSION = 'v4';   // v4 : bandes-annonces vérifiées (TMDB plus strict, puis AlloCiné)
+const CACHE_VERSION = 'v5';   // v5 : vidéos TMDB revérifiées (bandes-annonces seulement)
 // Offre gratuite Cloudflare : 50 appels externes maximum par visite. On en garde 4 de marge.
 const BUDGET = 46;
 const ALLO_MAX = 30;                       // part réservée à AlloCiné (8 jours + pages en plus)                // à changer si le format des données change
@@ -182,9 +182,17 @@ function tmdbRequest(path, token, params = {}, ctx = null) {
   if (token.length > 40) headers.Authorization = 'Bearer ' + token; else u.searchParams.set('api_key', token);
   return get(u.toString(), headers, 6000, ctx).then(r => r.ok ? r.json() : null);
 }
-function pickTrailer(list) {
-  const yt = (list || []).filter(v => v.site === 'YouTube' && v.key);
-  return (yt.find(v => v.type === 'Trailer' && v.official) || yt.find(v => v.type === 'Trailer') || yt.find(v => v.type === 'Teaser') || yt[0] || null)?.key || null;
+/* Vidéos TMDB : seulement une bande-annonce ou un teaser, dont le nom le dit (ou reprend le titre du film),
+   et jamais un extrait de série (TMDB contient parfois des vidéos rattachées au mauvais film) */
+function pickTrailer(list, title) {
+  const t = plain(title);
+  const ok = v => {
+    const n = plain(v.name);
+    if (/saison|season|episode|serie/.test(n)) return false;
+    return /bande|annonce|trailer|teaser/.test(n) || (t.length > 2 && n.includes(t));
+  };
+  const yt = (list || []).filter(v => v.site === 'YouTube' && v.key && (v.type === 'Trailer' || v.type === 'Teaser') && ok(v));
+  return (yt.find(v => v.type === 'Trailer' && v.official) || yt.find(v => v.type === 'Trailer') || yt[0] || null)?.key || null;
 }
 /* Bande-annonce introuvable sur TMDB : recherche YouTube « titre bande annonce année » (API officielle, clé YOUTUBE_KEY).
    Quota gratuit de Google : environ 100 recherches par jour ; chaque résultat est gardé 30 jours. */
@@ -241,6 +249,13 @@ async function alloTrailer(f, ctx) {
 // Cherche la bande-annonce d'un film : TMDB (le bon film seulement), sinon la fiche AlloCiné, sinon YouTube.
 // Chaque étape est gardée en mémoire. Renvoie null si le budget d'appels de cette visite est épuisé :
 // le film sera terminé à la visite suivante.
+const RULES = 2;   // version des règles de vérification des vidéos
+async function tmdbVideos(id, f, token, ctx) {
+  const fr = await tmdbRequest(`/movie/${id}/videos`, token, { language: 'fr-FR' }, ctx);
+  let yt = pickTrailer(fr?.results, f.t);
+  if (!yt) { const en = await tmdbRequest(`/movie/${id}/videos`, token, { language: 'en-US' }, ctx); yt = pickTrailer(en?.results, f.t); }
+  return yt;
+}
 async function tmdbFor(f, token, store, ctx) {
   const key = 'film3-' + f.id;   // « film3 » : on refait toutes les recherches avec les nouvelles règles
   let info = store ? await store.get(key).catch(() => null) : null;
@@ -257,10 +272,17 @@ async function tmdbFor(f, token, store, ctx) {
         info.tmdbId = m.id;
         info.backdrop = m.backdrop_path ? TMDB_IMG + 'w780' + m.backdrop_path : null;
         info.poster = m.poster_path ? TMDB_IMG + 'w500' + m.poster_path : null;
-        const fr = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'fr-FR' }, ctx);
-        info.yt = pickTrailer(fr?.results);
-        if (!info.yt) { const en = await tmdbRequest(`/movie/${m.id}/videos`, token, { language: 'en-US' }, ctx); info.yt = pickTrailer(en?.results); }
+        info.yt = await tmdbVideos(m.id, f, token, ctx);
       }
+      info.rules = RULES;
+      await save();
+    }
+    if (info.rules !== RULES) {   // résultat enregistré avec d'anciennes règles : on revérifie la vidéo venue de TMDB
+      if (info.ytFrom !== 'allocine' && info.ytFrom !== 'youtube') {
+        info.yt = info.tmdbId ? await tmdbVideos(info.tmdbId, f, token, ctx) : null;
+        if (!info.yt) info.alloTried = false;
+      }
+      info.rules = RULES;
       await save();
     }
     if (!info.yt && !info.alloTried) {

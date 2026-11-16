@@ -731,15 +731,17 @@ async function completeTrailers(id, n) {
     }
   } catch (e) {}
 }
+/* Les sorties de la semaine d'abord, puis les autres films (dans l'ordre d'AlloCiné) */
+const newFirst = (list, day) => list.map((f, i) => ({ f, i, n: isNew(f, day) ? 1 : 0 })).sort((a, b) => b.n - a.n || a.i - b.i).map(x => x.f);
 function filmsFor() {
   const D = DATA[S.cin]; if (!D || D.status !== 'ok') return [];
   const di = iso(DAYS[S.day]); const m = hourMin();
-  return D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length);
+  return newFirst(D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length), DAYS[S.day]);
 }
 function filmsOfDay() {
   const D = DATA[S.cin]; if (!D || D.status !== 'ok') return [];
   const di = iso(DAYS[S.day]), m = S.day === 0 ? nowMin() : 0;
-  return D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length);
+  return newFirst(D.films.map(f => ({ ...f, s: f.s.filter(x => x.d === di && toMin(x.h) >= m) })).filter(f => f.s.length), DAYS[S.day]);
 }
 function isNew(f, day = DAYS[S.day]) {
   const sd = String(f.sortie || '').slice(0, 10); if (!/^\d{4}-\d{2}-\d{2}$/.test(sd)) return false;
@@ -1369,7 +1371,7 @@ const filmById = id => G.doc.films.find(f => f.id === id);
 /* Séances d'un film à partir d'une heure (et pas déjà passées si c'est aujourd'hui) */
 const seasFrom = (f, m) => f.s.filter(x => toMin(x.h) >= Math.max(m || 0, gToday() ? nowMin() : 0));
 /* Films à départager selon l'heure où on est dispo */
-const deckFor = dispo => G.doc.films.map(f => ({ ...f, s: seasFrom(f, dispo) })).filter(f => f.s.length);
+const deckFor = dispo => newFirst(G.doc.films.map(f => ({ ...f, s: seasFrom(f, dispo) })).filter(f => f.s.length), new Date(G.doc.jourISO + 'T00:00:00'));
 const myDispo = () => G.joined ? (G.me.dispo || 0) : 0;
 const initial = s => esc(([...String(s || '?').trim()][0] || '?').toUpperCase());
 
