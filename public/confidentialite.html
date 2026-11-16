@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1B1B1B">
+<title>Confidentialité – Pot'corn</title>
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<style>
+:root{--ink:#1B1B1B;--ink2:#2A2A2A;--cream:#F4EFE6;--or:#F28C28;--teal:#2BB3A3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ink);color:#e8e8e8;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
+.wrap{max-width:680px;margin:0 auto;padding:20px 18px 60px}
+a{color:var(--or)}
+.top{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--cream);font-weight:800;letter-spacing:.04em;font-size:18px}
+h1{font-size:26px;line-height:1.2;color:#fff;margin:24px 0 6px}
+.maj{color:#9a9a9a;font-size:13px;margin:0 0 20px}
+h2{font-size:17px;color:var(--or);margin:28px 0 8px}
+.card{background:var(--ink2);border-radius:14px;padding:14px 16px;margin:10px 0}
+.card b{color:#fff}
+ul{padding-left:20px;margin:8px 0}
+li{margin:4px 0}
+.ok{background:#21302E;color:#CFF3EC;border-radius:14px;padding:14px 16px}
+.back{display:inline-block;margin-top:28px;background:var(--or);color:var(--ink);text-decoration:none;font-weight:800;border-radius:999px;padding:12px 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="top" href="./"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="10" cy="9" r="5" fill="#F4EFE6"/><circle cx="17" cy="6" r="5.5" fill="#F4EFE6"/><circle cx="23" cy="10" r="4.5" fill="#F4EFE6"/><path d="M6 12h20l-2.6 17H8.6z" fill="#F4EFE6"/><path d="M10.5 12l1.2 17M16 12v17M21.5 12l-1.2 17" stroke="#F28C28" stroke-width="2.6"/></svg>POT'CORN</a>
+
+  <h1>Confidentialité</h1>
+  <p class="maj">Mise à jour : 16 novembre 2026</p>
+
+  <div class="ok">Pot’corn fonctionne <b>sans compte, sans publicité et sans traceur publicitaire</b>. On garde le strict nécessaire, et seulement le temps de choisir votre film.</div>
+
+  <h2>Ce qui reste sur ton téléphone</h2>
+  <div class="card">
+    <p>Dans la mémoire de ton navigateur : tes cinémas, les films gardés ou éliminés, ton prénom et le lien de ta séance en cours. Rien de tout cela n’est envoyé ailleurs tant que tu ne participes pas à une séance entre potes.</p>
+    <p>Ces choix sont <b>effacés automatiquement</b> une fois le jour passé (ou la séance terminée). Tu peux aussi tout effacer à tout moment depuis les réglages de ton navigateur (données du site potcorn.pages.dev).</p>
+  </div>
+
+  <h2>Ce qui est enregistré en ligne (« Choisir entre potes »)</h2>
+  <div class="card">
+    <p>Seulement si tu crées ou rejoins une séance entre potes, et seulement quand tu valides tes choix :</p>
+    <ul>
+      <li>le <b>prénom</b> que tu indiques (tu peux mettre un surnom) ;</li>
+      <li>l’<b>heure</b> à partir de laquelle tu es dispo ;</li>
+      <li>les <b>films</b> que tu as gardés, éliminés, et ton coup de cœur ;</li>
+      <li>un <b>identifiant anonyme</b> créé automatiquement pour ce navigateur (pas d’adresse e-mail, pas de numéro de téléphone).</li>
+    </ul>
+    <p>Pour l’organisateur, s’y ajoutent le cinéma, le jour, la liste des films de la séance et le film finalement choisi.</p>
+    <p>Ces informations sont visibles par <b>les personnes qui ont le lien de la séance</b>. Elles sont stockées chez Google Firebase (base de données Firestore).</p>
+    <p><b>Durée :</b> les choix sont effacés quand l’organisateur annule la séance, ou quand quelqu’un rouvre le lien une fois la séance passée. Si personne ne le rouvre, tu peux demander l’effacement à tout moment (voir plus bas).</p>
+  </div>
+
+  <h2>Ta position (« Près de moi »)</h2>
+  <div class="card">
+    <p>Ta position n’est demandée que si tu touches « Les cinémas près de moi ». Elle sert sur le moment à calculer les distances, <b>sur ton téléphone</b>, et n’est jamais enregistrée ni envoyée. Quand tu tapes le nom d’une ville, ce texte est envoyé au service public de recherche d’adresses de l’IGN (Géoplateforme) pour trouver la ville.</p>
+  </div>
+
+  <h2>Les services utilisés</h2>
+  <div class="card">
+    <ul>
+      <li><b>Cloudflare</b> : hébergement du site et petite mémoire des programmes de cinéma.</li>
+      <li><b>Google Firebase</b> : séances entre potes (voir plus haut).</li>
+      <li><b>AlloCiné</b> : programmes des cinémas. Les liens « réserver » mènent au site de chaque cinéma.</li>
+      <li><b>TMDB</b> et <b>YouTube</b> : images et bandes-annonces. Les vidéos sont lues en mode « confidentialité renforcée » de YouTube (youtube-nocookie.com) ; YouTube peut toutefois collecter des données quand tu lances une vidéo.</li>
+      <li><b>Google Fonts</b> : les polices d’écriture du site.</li>
+      <li><b>IGN Géoplateforme</b> : recherche de villes.</li>
+      <li><b>WhatsApp</b> : uniquement quand tu choisis de partager un message.</li>
+    </ul>
+    <p>Pot’corn n’utilise pas de cookie de mesure d’audience ni de publicité. Pot’corn n’est ni approuvé ni certifié par TMDB, ni lié à AlloCiné.</p>
+  </div>
+
+  <h2>Tes droits</h2>
+  <div class="card">
+    <p>Tu peux demander à voir, corriger ou effacer tes informations, ou poser une question, en écrivant à <a href="mailto:studio.sebdesign@gmail.com">studio.sebdesign@gmail.com</a>. Indique le lien de la séance concernée et ton prénom.</p>
+    <p>Si tu estimes que tes droits ne sont pas respectés, tu peux aussi t’adresser à la CNIL (<a href="https://www.cnil.fr" rel="noopener">cnil.fr</a>).</p>
+    <p>Pot’corn est un projet personnel de Studio Sebdesign.</p>
+  </div>
+
+  <a class="back" href="./">‹ Retour à Pot’corn</a>
+</div>
+</body>
+</html>

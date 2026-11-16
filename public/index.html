@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1B1B1B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pot'corn">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>Pot'corn – le ciné qu'on choisit entre potes</title>
 <meta name="description" content="Les séances près de chez toi en cartes à glisser, avec les bandes-annonces. Garde tes films, envoie ta sélection à tes potes sur WhatsApp et votez.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -240,6 +248,39 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .over h2{font-family:'Rubik Mono One',sans-serif;font-size:20px;margin:0}
 .over p{margin:0;color:#ddd;font-size:15px;line-height:1.5}
 .over b{color:var(--or)}
+/* ---------- Choix du cinéma ---------- */
+.flink{border:0;background:none;padding:0;color:#bdbdbd;font:inherit;text-decoration:underline;cursor:pointer}
+.instl{display:none}.can-install .instl{display:inline}
+.srch{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #BDB6A8;border-radius:12px;padding:0 12px;min-height:50px;color:#5A544B}
+.srch input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:16px;color:var(--ink);min-height:46px}
+.nearbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:10px 0 4px;border:2px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);font-weight:800;font-size:15px;min-height:48px}
+.crow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;border:0;border-radius:12px;background:#fff;color:var(--ink);padding:10px 14px;margin:6px 0;text-align:left;min-height:52px}
+.crow b{font-size:15px;display:flex;align-items:center;gap:6px}
+.crow span{font-size:12px;color:#5A544B}
+.crow.on{background:var(--ink);color:#fff}.crow.on span{color:#ccc}
+.crow.town b svg{color:var(--or)}
+.pnote{font-size:14px;color:#5A544B;line-height:1.45;display:flex;align-items:center;gap:8px}
+.spin{width:16px;height:16px;flex:none;border-radius:50%;border:3px solid #d9d1c2;border-top-color:var(--or);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.opt.find{justify-content:flex-start;background:transparent;border:2px dashed #BDB6A8}
+.pickpage{background:var(--cream);color:var(--ink);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.pickpage h1{font-family:'Rubik Mono One',sans-serif;font-size:19px;margin:0 0 4px}
+.pickpage .msg{color:#5A544B;margin-bottom:8px}
+.pickpage .lbl{color:#5A544B}
+.ytfind{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;white-space:nowrap;background:rgba(0,0,0,.72);color:#fff;font-size:13px;font-weight:700;border-radius:999px;padding:8px 14px 8px 10px;text-decoration:none}
+.ytfind svg{width:18px;height:18px}
+.ghost.relance{display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff}
+/* ---------- Aide (première visite) ---------- */
+.intro{position:fixed;inset:0;z-index:44;background:rgba(15,15,15,.9);display:flex;align-items:center;justify-content:center;padding:20px}
+.ibox{background:var(--cream);color:var(--ink);border-radius:22px;padding:22px 20px 14px;max-width:380px;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.iico{font-size:46px;line-height:1}
+.ibox h2{font-family:'Rubik Mono One',sans-serif;font-size:18px;margin:0}
+.ibox p{margin:0;font-size:15px;line-height:1.55;color:#3d3830}
+.ibox p .or{color:#B85E0B}
+.itip{background:#fff;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45;color:#3d3830}
+.itip small{color:#6b6459}
+.idots{display:flex;gap:6px}.idots span{width:8px;height:8px;border-radius:50%;background:#cfc6b6}.idots span.on{background:var(--or);width:22px;border-radius:4px}
+.ibox .linkbtn{color:#7C2D12}
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 </style>
 </head>
@@ -256,15 +297,19 @@ const FIREBASE_CONFIG = (typeof firebaseConfig !== 'undefined' && firebaseConfig
 const FB_VERSION = '10.12.2';
 
 /* ---------- Cinémas ----------
-   Identifiants AlloCiné (on les trouve dans l'adresse de la page du cinéma
-   sur allocine.fr : …salle_gen_csalle=B1139.html → B1139).
-   Étape suivante : la recherche de cinéma dans toute la France. */
-const CINEMAS = [
-  { id: 'W9161', name: 'CinéToile – Ballancourt', short: 'CinéToile' },
-  { id: 'B0053', name: 'Cinéma Arcel – Corbeil-Essonnes', short: 'Arcel Corbeil' },
-  { id: 'B0059', name: 'CGR Évry', short: 'CGR Évry' },
-  { id: 'B1139', name: 'Pathé Carré Sénart – IMAX', short: 'Pathé Sénart' }
+   Toute la France : recherche (ville, code postal, nom) et « Près de moi » via /api/cinemas.
+   Les cinémas déjà choisis sont gardés sur le téléphone (« Mes cinémas »).
+   Anciens cinémas de départ, repris pour ceux qui les utilisaient déjà : */
+const OLD_CINEMAS = [
+  { id: 'W9161', name: 'CinéToile', city: 'Ballancourt' },
+  { id: 'B0053', name: 'Cinéma Arcel', city: 'Corbeil-Essonnes' },
+  { id: 'B0059', name: 'CGR Évry', city: 'Évry' },
+  { id: 'B1139', name: 'Pathé Carré Sénart – IMAX', city: 'Lieusaint' }
 ];
+const CIN_API = '/api/cinemas';
+/* Centre approximatif et rayon (km) de chaque département, pour savoir lesquels regarder autour d'un point
+   (calculés à partir des communes de geo.api.gouv.fr) */
+const DEPC = {"01":[46.07,5.43,63],"02":[49.46,3.61,68],"03":[46.37,3.14,65],"04":[44.13,6.23,67],"05":[44.64,6.21,66],"06":[43.89,7.17,51],"07":[44.82,4.38,66],"08":[49.7,4.71,56],"09":[42.94,1.5,58],"10":[48.31,4.12,56],"11":[43.07,2.45,65],"12":[44.31,2.63,71],"13":[43.54,5.09,58],"14":[49.11,-0.36,65],"15":[45.05,2.73,63],"16":[45.66,0.25,65],"17":[45.72,-0.79,87],"18":[47.01,2.42,65],"19":[45.32,1.88,64],"2A":[41.88,8.98,60],"2B":[42.44,9.11,66],"21":[47.46,4.8,63],"22":[48.47,-2.78,67],"23":[46.06,1.99,53],"24":[45.14,0.71,67],"25":[47.08,6.37,65],"26":[44.74,5.21,72],"27":[49.08,1.04,64],"28":[48.46,1.38,54],"29":[48.27,-4.26,74],"30":[43.97,4.06,62],"31":[43.32,1.24,89],"32":[43.69,0.45,59],"33":[44.9,-0.45,88],"34":[43.6,3.36,69],"35":[48.17,-1.65,66],"36":[46.82,1.54,62],"37":[47.22,0.69,55],"38":[45.3,5.49,72],"39":[46.79,5.71,57],"40":[43.99,-0.69,81],"41":[47.66,1.41,67],"42":[45.76,4.24,62],"43":[45.09,3.78,59],"44":[47.36,-1.76,60],"45":[47.92,2.31,60],"46":[44.64,1.6,51],"47":[44.37,0.48,52],"48":[44.55,3.5,53],"49":[47.39,-0.54,65],"50":[49.09,-1.32,73],"51":[48.96,4.22,64],"52":[48.14,5.29,69],"53":[48.14,-0.64,57],"54":[48.95,6.28,85],"55":[49.02,5.36,67],"56":[47.74,-2.9,74],"57":[49.04,6.76,80],"58":[47.12,3.53,67],"59":[50.54,3.15,92],"60":[49.41,2.42,61],"61":[48.59,0.05,67],"62":[50.51,2.37,70],"63":[45.78,3.19,69],"64":[43.21,-0.89,76],"65":[43.17,0.18,51],"66":[42.62,2.47,59],"67":[48.61,7.58,63],"68":[47.86,7.24,48],"69":[45.88,4.71,50],"70":[47.63,6.1,56],"71":[46.65,4.57,70],"72":[48.03,0.22,53],"73":[45.53,6.38,61],"74":[46.07,6.38,48],"75":[48.86,2.35,7],"76":[49.66,0.92,64],"77":[48.61,2.96,63],"78":[48.77,1.84,41],"79":[46.53,-0.3,62],"80":[49.97,2.29,66],"81":[43.8,2.22,53],"82":[44.08,1.37,49],"83":[43.43,6.28,55],"84":[44.04,5.19,54],"85":[46.68,-1.48,75],"86":[46.61,0.55,73],"87":[45.92,1.28,53],"88":[48.17,6.31,70],"89":[47.86,3.6,66],"90":[47.62,6.95,22],"91":[48.53,2.25,31],"92":[48.84,2.24,12],"93":[48.9,2.45,12],"94":[48.77,2.46,12],"95":[49.07,2.1,35],"971":[16.16,-61.43,42],"972":[14.64,-61.02,30],"973":[4.27,-53.02,185],"974":[-21.14,55.52,32]};
 const API = '/api/seances';
 const JOURS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
 const HOURS = [
@@ -305,7 +350,8 @@ const BRAND = `<div class="brand"><a class="logo" href="./" aria-label="Pot'corn
     <path d="M6 12h20l-2.6 17H8.6z" fill="#F4EFE6"/>
     <path d="M10.5 12l1.2 17M16 12v17M21.5 12l-1.2 17" stroke="#F28C28" stroke-width="2.6"/>
   </svg><span>POT<i>'</i>CORN</span></a><span class="tagline">le ciné qu'on choisit<br>entre potes</span></div>`;
-const CREDIT = `<div class="demo">Séances : AlloCiné · Bandes-annonces : TMDB et YouTube<br>Pot'corn n\u2019est ni approuvé ni certifié par TMDB</div>`;
+const CREDIT = `<div class="demo">Séances : AlloCiné · Bandes-annonces : TMDB et YouTube<br>Pot'corn n\u2019est ni approuvé ni certifié par TMDB<br>
+  <button class="flink" data-act="intro">Comment ça marche ?</button> · <a class="flink" href="confidentialite.html">Confidentialité</a><span class="instl"> · <button class="flink" data-act="install">Installer l’appli</button></span></div>`;
 const ICON = {
   x: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
   xs: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
@@ -333,11 +379,27 @@ function dayLong(i) { const d = DAYS[i]; return JOURS[d.getDay()] + ' ' + d.getD
 /* ---------- État ---------- */
 const S = {
   tab: 'films', sheet: null, playing: null,
-  cin: store.get('cine:cin', CINEMAS[0].id), day: 0, hour: -1,
+  cin: null, day: 0, hour: -1,
   prenom: store.get('cine:prenom', ''), mot: '', showRemoved: false, autoDone: false
 };
-if (!CINEMAS.some(c => c.id === S.cin)) S.cin = CINEMAS[0].id;
-const cin = () => CINEMAS.find(c => c.id === S.cin) || CINEMAS[0];
+/* Mes cinémas (les derniers choisis en premier) */
+const myCinemas = () => store.get('cine:mescinemas', null) || (() => {
+  // ancienne version : on reprend les 4 cinémas de départ, celui utilisé en premier
+  const old = store.get('cine:cin', null); if (!old) return [];
+  const list = [...OLD_CINEMAS].sort((a, b) => (b.id === old) - (a.id === old));
+  store.set('cine:mescinemas', list); return list;
+})();
+S.cin = (myCinemas()[0] || {}).id || null;
+function cin() {
+  const c = myCinemas().find(x => x.id === S.cin) || { id: S.cin, name: S.cin || '', city: '' };
+  const full = c.city && !c.name.toLowerCase().includes(c.city.toLowerCase()) ? `${c.name} – ${c.city}` : c.name;
+  return { id: c.id, name: full, short: c.name, city: c.city || '' };
+}
+function useCinema(c) {
+  const list = [c, ...myCinemas().filter(x => x.id !== c.id)].slice(0, 8);
+  store.set('cine:mescinemas', list); store.set('cine:cin', c.id);
+  S.cin = c.id; S.tab = 'films'; S.playing = null; S.autoDone = false;
+}
 const nowMin = () => { const n = new Date(); return n.getHours() * 60 + n.getMinutes(); };
 const hourMin = () => S.hour === -1 ? (S.day === 0 ? nowMin() : 0) : S.hour;
 function hourText() {
@@ -415,6 +477,8 @@ const seaTxt = f => f.s.map(lab).join(' · ');
    ===================================================================== */
 Object.assign(ICON, {
   pin: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  search: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>',
+  target: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
   lock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
 });
 const dayText = i => i === 0 ? 'aujourd’hui' : i === 1 ? 'demain' : dayLong(i);
@@ -482,7 +546,8 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
   const media = playing
     ? `<iframe src="${embed(f.yt)}" title="Bande-annonce de ${esc(f.t)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>
        <button class="backposter" data-act="stop">Revenir à l'affiche</button>`
-    : picture + (f.yt ? `<span class="playbtn">${ICON.play}</span>` : '');
+    : picture + (f.yt ? `<span class="playbtn">${ICON.play}</span>`
+      : `<a class="ytfind" href="${ytSearchUrl(f)}" target="_blank" rel="noopener">${ICON.play} Chercher la bande-annonce</a>`);
   const allo = safeUrl(f.allo) || `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(f.t)}`;
   return `<article class="card ${isTop ? 'front' : 'behind'}" data-id="${esc(f.id)}" aria-label="${esc(f.t)}">
     <div class="chead"><span>N° ${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>${f.s.some(x => x.ap) ? '<span class="badge">AVANT-PREMIÈRE</span>' : isNew(f, ctx.date) ? '<span class="badge">SORTIE DE LA SEMAINE</span>' : ''}</div>
@@ -617,11 +682,12 @@ function renderHome() {
   $app.innerHTML = BRAND + stepKick(1, 'Je choisis mes films') + setLine() + resumeHTML() +
     `<div class="stage${deck.length ? ' cards' : ''}">${stage}</div>` +
     (deck.length ? underBar(L.hist.length > 0, 'undo', 'finish', 'J’ai fini') : '') + CREDIT + nav + sheetHTML();
+  if (!store.get('cine:intro', null) && !document.querySelector('.intro')) showIntro();
   const el = document.querySelector('.card.front');
   if (el) {
     attachSwipe(el, {
       up: true, onDecide: decide,
-      onTap: id => { const f = filmsFor().find(x => x.id === id); if (f && f.yt) { S.playing = f.id; render(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
+      onTap: id => { const f = filmsFor().find(x => x.id === id); if (f && f.yt) { S.playing = f.id; render(); } }
     });
     armNudge();
   }
@@ -648,13 +714,134 @@ function undo() {
   saveList(L); S.playing = null; render();
 }
 
+/* =====================================================================
+   CHOIX DU CINÉMA (toute la France)
+   - recherche : ville, code postal ou nom du cinéma (AlloCiné + villes de la Géoplateforme IGN)
+   - « Près de moi » : position du téléphone → cinémas des départements autour, triés par distance
+   ===================================================================== */
+const GEO = 'https://data.geopf.fr/geocodage';
+const kmBetween = (a, b, c, d) => { const R = 6371, t = Math.PI / 180, x = (d - b) * t * Math.cos((a + c) / 2 * t), y = (c - a) * t; return Math.sqrt(x * x + y * y) * R; };
+const fmtKm = k => k < 10 ? k.toFixed(1).replace('.', ',') + ' km' : Math.round(k) + ' km';
+let _pickT = null, _pickN = 0;
+function pickerHTML() {
+  const mine = myCinemas();
+  return `<label class="srch">${ICON.search}<input id="c-q" type="search" inputmode="search" autocomplete="off" placeholder="Ville, code postal ou cinéma" aria-label="Chercher un cinéma"></label>
+    <button class="nearbtn" data-act="near">${ICON.target} Les cinémas près de moi</button>
+    <div id="c-res" aria-live="polite">${mine.length ? `<div class="lbl">MES CINÉMAS</div>` + mine.map(c => cinRow(c)).join('') : ''}</div>`;
+}
+function cinRow(c, km) {
+  const meta = [c.city, km != null ? fmtKm(km) : '', c.screens ? c.screens + ' salle' + (c.screens > 1 ? 's' : '') : ''].filter(Boolean).join(' · ');
+  return `<button class="crow${c.id === S.cin ? ' on' : ''}" data-act="pickcin" data-v="${esc(c.id)}" data-n="${esc(c.name)}" data-c="${esc(c.city || '')}">
+    <b>${esc(c.name)}</b>${meta ? `<span>${esc(meta)}</span>` : ''}</button>`;
+}
+const pickRes = html => { const el = document.getElementById('c-res'); if (el) el.innerHTML = html; };
+const pickWait = txt => pickRes(`<p class="pnote"><span class="spin"></span>${esc(txt)}</p>`);
+/* Recherche pendant la frappe */
+function pickInput(q) {
+  clearTimeout(_pickT);
+  q = q.trim();
+  if (q.length < 2) { pickRes(myCinemas().length ? `<div class="lbl">MES CINÉMAS</div>` + myCinemas().map(c => cinRow(c)).join('') : ''); return; }
+  _pickT = setTimeout(() => pickSearch(q), 350);
+}
+async function pickSearch(q) {
+  const n = ++_pickN;
+  pickWait('Recherche…');
+  const [allo, towns] = await Promise.all([
+    fetch(`${CIN_API}?q=${encodeURIComponent(q)}`).then(r => r.json()).catch(() => ({})),
+    fetch(`${GEO}/search?q=${encodeURIComponent(q)}&index=address&type=municipality&limit=5&autocomplete=1`).then(r => r.json()).catch(() => ({}))
+  ]);
+  if (n !== _pickN) return;   // une recherche plus récente est en cours
+  const th = (allo && allo.theaters) || [];
+  const tw = ((towns && towns.features) || []).filter(f => f.geometry && f.properties).slice(0, 5);
+  let h = '';
+  if (th.length) h += `<div class="lbl">CINÉMAS</div>` + th.map(c => cinRow(c)).join('');
+  if (tw.length) h += `<div class="lbl">AUTOUR D’UNE VILLE</div>` + tw.map(f => {
+    const p = f.properties, [lon, lat] = f.geometry.coordinates, label = `${p.city || p.name}${p.postcode ? ' (' + p.postcode + ')' : ''}`;
+    return `<button class="crow town" data-act="neartown" data-lat="${lat}" data-lon="${lon}" data-label="${esc(label)}"><b>${ICON.pin} ${esc(label)}</b><span>Voir les cinémas autour</span></button>`;
+  }).join('');
+  pickRes(h || `<p class="pnote">Rien trouvé pour « ${esc(q)} ». Essaie une ville ou un code postal.</p>`);
+}
+/* Cinémas autour d'un point */
+async function nearPlace(lat, lon, label) {
+  const n = ++_pickN;
+  pickWait(`Recherche des cinémas autour de ${label || 'toi'}…`);
+  const deps = Object.entries(DEPC).map(([d, [la, lo, r]]) => ({ d, gap: kmBetween(lat, lon, la, lo) - r }))
+    .filter(x => x.gap < 30).sort((a, b) => a.gap - b.gap).slice(0, 5).map(x => x.d);
+  if (!deps.length) { pickRes(`<p class="pnote">Aucun cinéma trouvé par ici. Essaie avec le nom d’une ville.</p>`); return; }
+  const lists = await Promise.all(deps.map(d => fetch(`${CIN_API}?dep=${d}`).then(r => r.json()).catch(() => ({}))));
+  if (n !== _pickN) return;
+  const seen = new Set(), all = [];
+  for (const l of lists) for (const c of (l.cinemas || [])) if (!seen.has(c.id) && c.lat != null) { seen.add(c.id); all.push({ ...c, km: kmBetween(lat, lon, c.lat, c.lon) }); }
+  all.sort((a, b) => a.km - b.km);
+  const near = all.filter(c => c.km <= 40).slice(0, 15);
+  const shown = near.length ? near : all.slice(0, 8);
+  if (!shown.length) { pickRes(`<p class="pnote">Impossible de charger les cinémas pour le moment. Réessaie dans un instant.</p>`); return; }
+  pickRes(`<div class="lbl">AUTOUR DE ${esc((label || 'toi').toUpperCase())}</div>` + shown.map(c => cinRow(c, c.km)).join(''));
+}
+function nearMe() {
+  if (!navigator.geolocation) { pickRes(`<p class="pnote">Ton téléphone ne donne pas sa position. Tape plutôt le nom de ta ville.</p>`); return; }
+  pickWait('On cherche où tu es…');
+  navigator.geolocation.getCurrentPosition(
+    p => nearPlace(p.coords.latitude, p.coords.longitude, 'toi'),
+    e => pickRes(`<p class="pnote">${e.code === 1 ? 'Tu n’as pas autorisé la localisation.' : 'Position introuvable pour le moment.'} Tape plutôt le nom de ta ville.</p>`),
+    { enableHighAccuracy: false, timeout: 12000, maximumAge: 10 * 60000 }
+  );
+}
+async function cityList(id, label) {
+  const n = ++_pickN;
+  pickWait(`Cinémas de ${label}…`);
+  const j = await fetch(`${CIN_API}?ville=${encodeURIComponent(id)}`).then(r => r.json()).catch(() => ({}));
+  if (n !== _pickN) return;
+  pickRes((j.cinemas || []).length ? `<div class="lbl">${esc(label.toUpperCase())}</div>` + j.cinemas.map(c => cinRow(c)).join('') : `<p class="pnote">Aucun cinéma trouvé.</p>`);
+}
+/* Première visite sans cinéma : page de choix */
+function renderPickPage() {
+  $app.innerHTML = BRAND + `<div class="pickpage"><h1>Où vas-tu au ciné ?</h1>
+    <p class="msg">Choisis ton cinéma : Pot’corn te montre tous ses films à l’affiche, avec les bandes-annonces.</p>${pickerHTML()}</div>` + CREDIT;
+  if (!store.get('cine:intro', null)) showIntro();
+}
+document.addEventListener('input', e => { if (e.target.id === 'c-q') pickInput(e.target.value); });
+
+/* =====================================================================
+   AIDE À LA PREMIÈRE VISITE (3 écrans)
+   ===================================================================== */
+const INTRO = [
+  { i: '🎟️', t: 'Choisis ton ciné', p: 'Ton cinéma, le jour et l’heure : Pot’corn te montre tous les films à l’affiche, avec leur bande-annonce.' },
+  { i: '👆', t: 'Glisse les cartes', p: '<b>←</b> non merci · <b>je garde →</b><br><b class="or">↑ coup de cœur</b> (un seul, il compte double)<br>Touche l’image pour voir la bande-annonce.' },
+  { i: '🍿', t: 'Choisissez entre potes', p: 'Valide ta sélection et invite tes potes sur WhatsApp. Chacun choisit de son côté, sans compte, et Pot’corn trouve le film qui met tout le monde d’accord.' }
+];
+let _introI = 0;
+function showIntro() { _introI = 0; document.querySelector('.intro')?.remove(); const o = document.createElement('div'); o.className = 'intro'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); document.body.appendChild(o); introStep(0); }
+function introStep(d) {
+  const o = document.querySelector('.intro'); if (!o) return;
+  _introI = Math.max(0, Math.min(INTRO.length - 1, _introI + d));
+  const s = INTRO[_introI], last = _introI === INTRO.length - 1;
+  o.innerHTML = `<div class="ibox"><div class="iico">${s.i}</div><h2>${s.t}</h2><p>${s.p}</p>
+    ${last ? `<div class="itip"><b>Astuce :</b> ajoute Pot’corn à ton écran d’accueil pour l’ouvrir comme une appli.${_deferredInstall ? '' : `<br><small>iPhone : bouton Partager, puis « Sur l’écran d’accueil ». Android : menu ⋮, puis « Ajouter à l’écran d’accueil ».</small>`}</div>
+      ${_deferredInstall ? `<button class="big cream" data-act="install">Installer Pot’corn</button>` : ''}` : ''}
+    <div class="idots">${INTRO.map((_, i) => `<span class="${i === _introI ? 'on' : ''}"></span>`).join('')}</div>
+    <button class="big or" data-act="${last ? 'introEnd' : 'introNext'}">${last ? 'C’est parti !' : 'Suivant'}</button>
+    ${last ? '' : '<button class="linkbtn" data-act="introEnd">Passer</button>'}</div>`;
+}
+function closeIntro() { document.querySelector('.intro')?.remove(); store.set('cine:intro', 1); }
+
+/* Installer l'appli (Android / ordinateur : le navigateur propose l'installation) */
+let _deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredInstall = e; document.body.classList.add('can-install'); });
+window.addEventListener('appinstalled', () => { _deferredInstall = null; document.body.classList.remove('can-install'); toast('Pot’corn est sur ton écran d’accueil !'); });
+async function installApp() {
+  if (_deferredInstall) { _deferredInstall.prompt(); try { await _deferredInstall.userChoice; } catch (e) {} _deferredInstall = null; document.body.classList.remove('can-install'); closeIntro(); }
+  else toast('iPhone : Partager → « Sur l’écran d’accueil ». Android : menu ⋮ → « Ajouter à l’écran d’accueil »');
+}
+
 /* ---------- Feuilles (réglages, partage, validation) ---------- */
 function sheetHTML() {
   if (!S.sheet) return '';
   let body = '';
   if (S.sheet === 'set') {
     body = `<h2>Où et quand ?</h2>
-      <div class="lbl">CINÉMA</div>${CINEMAS.map(c => `<button class="opt ${c.id === S.cin ? 'on' : ''}" data-act="setcin" data-v="${c.id}">${esc(c.name)}</button>`).join('')}
+      <div class="lbl">CINÉMA</div>${myCinemas().slice(0, 5).map(c => `<button class="opt ${c.id === S.cin ? 'on' : ''}" data-act="setcin" data-v="${esc(c.id)}"><span>${esc(c.name)}</span><small>${esc(c.city || '')}</small></button>`).join('')}
+      <button class="opt find" data-act="sheet" data-v="cinpick">${ICON.search} Chercher un autre cinéma</button>
       <div class="lbl">JOUR</div><div class="chips2">${DAYS.map((d, i) => `<button class="dchip${i === S.day ? ' on' : ''}" data-act="setday" data-v="${i}" ${dayOpen(i) ? '' : 'disabled'}>${dayShort(i)}</button>`).join('')}</div>
       <p class="note" style="margin-top:8px">Les cinémas publient le programme de la semaine suivante le mardi.</p>
       <div class="lbl">SÉANCES À PARTIR DE</div><div class="chips2">${HOURS.filter(h => !(h.v === -1 && S.day !== 0)).map(h => `<button class="dchip${h.v === S.hour ? ' on' : ''}" data-act="sethour" data-v="${h.v}">${h.l}</button>`).join('')}</div>
@@ -669,6 +856,8 @@ function sheetHTML() {
       <button class="big ink" id="f-send" data-act="share">${ICON.send} Ouvrir WhatsApp</button>`;
   } else if (S.sheet === 'valid') {
     body = validSheetBody(false);
+  } else if (S.sheet === 'cinpick') {
+    body = `<h2>Choisir un cinéma</h2>` + pickerHTML();
   }
   return `<div class="sheetbg" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true"><span class="grip"></span>${body}</div>`;
 }
@@ -733,6 +922,10 @@ function renderShared() {
         <div class="vinfo"><div class="t">${esc(f.t)}</div><div class="d">${fmtDur(Number(f.d) || 0)}</div><div class="m">${esc(f.g)}</div></div></div>
         <div class="vbar"><span class="sea">${(f.s || []).map(esc).join(' · ')}</span></div></div>`).join('')}</div>
     <a class="big or" href="${base()}">Faire ma propre sélection avec Pot’corn</a>${CREDIT}`;
+}
+function ytSearchUrl(f) {
+  const y = String(f.sortie || '').slice(0, 4);
+  return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(`${f.t} bande annonce ${y}`.trim());
 }
 function thumbBtn(f) {
   const img = `<img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'">`;
@@ -928,7 +1121,7 @@ function renderGroup() {
   if (tab === 'films' && el) {
     attachSwipe(el, {
       up: true, onDecide: gDecide,
-      onTap: id => { const f = filmById(id); if (f && f.yt) { G.playing = id; renderGroup(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
+      onTap: id => { const f = filmById(id); if (f && f.yt) { G.playing = id; renderGroup(); } }
     });
     armNudge();
   }
@@ -1018,6 +1211,11 @@ function inviteHref() {
     `Choisis tes films parmi les ${n} à l’affiche (bandes-annonces comprises), puis valide : tu verras ce que les autres ont choisi, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n\n👉 ${groupLink()}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
+function relanceHref() {
+  const D = G.doc;
+  const txt = `Petit rappel 🍿\n\nOn choisit le film pour ${D.jour} au ${D.cinema.name}. Si tu n’as pas encore donné tes choix, c’est par ici (2 minutes, sans compte) :\n\n👉 ${groupLink()}`;
+  return 'https://wa.me/?text=' + encodeURIComponent(txt);
+}
 function decisionHref() {
   const D = G.doc, dc = D.decision, f = filmById(dc.filmId);
   const txt = `C’est décidé ! 🍿\n\nOn va voir « ${dc.t} »${f && f.d ? ' (' + fmtDur(f.d) + ')' : ''}\n${D.jour.replace(/^./, c => c.toUpperCase())} à ${dc.h}${dc.v !== 'VF' ? ' en ' + dc.v : ''}\n${D.cinema.name}\n\n` +
@@ -1087,6 +1285,7 @@ function gResHTML() {
   }).join('')}</div>`;
 
   if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
+  if (!dc) h += `<a class="ghost relance" href="${relanceHref()}" target="_blank" rel="noopener">⏰ Relancer ceux qui n’ont pas répondu</a>`;
   if (isCreator()) h += cancelLink();
   h += `<a class="ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff" href="${base()}">Voir toutes les séances</a>`;
   return h;
@@ -1206,6 +1405,7 @@ function playRoulette(r) {
 function render() {
   if (G.on) return renderGroup();
   if (V.on) return renderShared();
+  if (!S.cin) return renderPickPage();
   if (!DATA[S.cin]) { loadCinema(S.cin); return; }
   renderHome();
 }
@@ -1233,7 +1433,15 @@ document.addEventListener('click', e => {
     case 'sheet': S.sheet = v; render(); break;
     case 'close': if (G.on) G.sheet = null; else S.sheet = null; render(); break;
     /* Réglages : le panneau reste ouvert, la liste se met à jour derrière */
-    case 'setcin': S.cin = v; store.set('cine:cin', v); S.playing = null; S.tab = 'films'; render(); break;
+    case 'setcin': { const c = myCinemas().find(x => x.id === v); if (c) useCinema(c); render(); break; }
+    case 'pickcin': useCinema({ id: v, name: b.dataset.n || v, city: b.dataset.c || '' }); S.sheet = null; render(); window.scrollTo(0, 0); break;
+    case 'near': nearMe(); break;
+    case 'neartown': nearPlace(Number(b.dataset.lat), Number(b.dataset.lon), b.dataset.label || ''); break;
+    case 'cityall': cityList(v, b.dataset.label || ''); break;
+    case 'intro': showIntro(); break;
+    case 'introNext': introStep(1); break;
+    case 'introEnd': closeIntro(); break;
+    case 'install': installApp(); break;
     case 'setday': S.day = Number(v); if (S.day !== 0 && S.hour === -1) S.hour = 0; S.playing = null; S.tab = 'films'; render(); break;
     case 'sethour': S.hour = Number(v); S.playing = null; S.tab = 'films'; render(); break;
     case 'nextday': S.day = Math.min(S.day + 1, LIMIT); if (S.hour === -1) S.hour = 0; render(); break;
@@ -1293,6 +1501,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   const vid = document.querySelector('.vid'); if (vid) { vid.remove(); return; }
   const rou = document.querySelector('.roul'); if (rou) { rou.remove(); onGroupChange(); return; }
+  if (document.querySelector('.intro')) { closeIntro(); return; }
   if (G.on && G.sheet) { G.sheet = null; renderGroup(); return; }
   if (S.sheet) { S.sheet = null; render(); }
 });
