@@ -79,7 +79,9 @@ a.chip{color:var(--ink);text-decoration:none}
 .stub .chip{line-height:17px}
 .chip[hidden]{display:none!important}
 .card.short .stub .chips{height:29px}
-.chip.more{background:var(--sand)}
+.chip.more{background:var(--sand);border:0;font:inherit;font-weight:800;font-size:13px;color:var(--ink);cursor:pointer}
+.allseas{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.allseas .chip{font-size:15px;padding:9px 12px}
+.fx{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;background:var(--ink);color:var(--cream);border-radius:4px;padding:2px 5px;margin-left:3px;vertical-align:1px;text-transform:uppercase}
 .chip{font-size:13px;font-weight:800;background:var(--teal);color:var(--ink);border-radius:6px;padding:6px 9px}
 .allo{flex:none;margin-left:auto;font-size:12px;font-weight:700;color:#7C2D12;padding-top:7px;white-space:nowrap}
 .stamp{position:absolute;top:96px;z-index:3;font-family:'Rubik Mono One',sans-serif;font-size:24px;padding:6px 14px;border-radius:10px;border:4px solid;opacity:0;pointer-events:none;background:rgba(244,239,230,.92)}
@@ -741,7 +743,9 @@ function isNew(f, day = DAYS[S.day]) {
   const diff = (day - new Date(sd + 'T00:00:00')) / 86400000;
   return diff >= 0 && diff < 7;
 }
-const lab = x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : '');
+const lab = x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.fx ? ' ' + x.fx : '') + (x.ap ? ' AVP' : '');
+/* Pastille d'horaire : le format spécial (IMAX, 4DX…) en petit badge sombre */
+const chipIn = x => esc(x.h + (x.v !== 'VF' ? ' ' + x.v : '')) + (x.fx ? ` <i class="fx">${esc(x.fx)}</i>` : '') + (x.ap ? ' AVP' : '');
 const seaTxt = f => f.s.map(lab).join(' · ');
 
 /* =====================================================================
@@ -831,8 +835,8 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
     </div>
     <div class="stub"><div class="chips">${f.s.map(x => {
       const b = safeUrl(x.book);
-      return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${x.h}">${lab(x)}</a>` : `<span class="chip">${lab(x)}</span>`;
-    }).join('')}<a class="chip more" href="${allo}" target="_blank" rel="noopener" hidden></a></div>
+      return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${esc(lab(x))}">${chipIn(x)}</a>` : `<span class="chip">${chipIn(x)}</span>`;
+    }).join('')}<button class="chip more" data-act="allseas" data-v="${esc(f.id)}" hidden></button></div>
       <a class="allo" href="${allo}" target="_blank" rel="noopener">AlloCiné ›</a></div>
     <div class="stamp keep">JE GARDE</div><div class="stamp nope">NON MERCI</div><div class="stamp coeur">COUP DE CŒUR</div>
   </article>`;
@@ -846,7 +850,7 @@ function fitChips(card) {
   if (box.scrollHeight <= box.clientHeight + 1) return;
   more.hidden = false;
   let n = 0;
-  while (box.scrollHeight > box.clientHeight + 1 && n < chips.length) { n++; chips[chips.length - n].hidden = true; more.textContent = '+' + n; more.setAttribute('aria-label', `${n} autre${n > 1 ? 's' : ''} séance${n > 1 ? 's' : ''} sur AlloCiné`); }
+  while (box.scrollHeight > box.clientHeight + 1 && n < chips.length) { n++; chips[chips.length - n].hidden = true; more.textContent = '+' + n; more.setAttribute('aria-label', `Voir toutes les séances (${n} de plus)`); }
 }
 /* Les horaires ont 2 rangées seulement si au moins un film du jour en a besoin (sinon 1 rangée pour toutes les cartes) */
 let _deckAll = [], _rowsKey = '', _twoRows = true;
@@ -859,7 +863,7 @@ function needTwoRows(width) {
   document.body.appendChild(st);
   const box = st.firstChild; let two = false;
   for (const f of _deckAll) {
-    box.innerHTML = f.s.map(x => `<span class="chip">${esc(lab(x))}</span>`).join('');
+    box.innerHTML = f.s.map(x => `<span class="chip">${chipIn(x)}</span>`).join('');
     if (box.scrollHeight > 40) { two = true; break; }
   }
   st.remove(); _rowsKey = key; _twoRows = two; return two;
@@ -1203,6 +1207,20 @@ function showInstallHelp() {
   document.body.appendChild(o);
 }
 
+/* Toutes les séances d'un film (pastille « +N » de la carte), rangées par version */
+function allSeasHTML(f, dateLabel, fromLabel) {
+  if (!f) return '';
+  const VERS = { VF: 'VERSION FRANÇAISE', VOST: 'VERSION ORIGINALE SOUS-TITRÉE' };
+  const groups = [...new Set(f.s.map(x => x.v))].sort((a, b) => (a === 'VF' ? -1 : b === 'VF' ? 1 : a.localeCompare(b)));
+  const chip = x => { const b = safeUrl(x.book), inner = esc(x.h) + (x.fx ? ` <i class="fx">${esc(x.fx)}</i>` : '') + (x.ap ? ' AVP' : '');
+    return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${esc(lab(x))}">${inner}</a>` : `<span class="chip">${inner}</span>`; };
+  const allo = safeUrl(f.allo) || `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(f.t)}`;
+  return `<h2>${esc(f.t)}</h2>
+    <p class="note">${esc(dateLabel)} · ${f.s.length} séance${f.s.length > 1 ? 's' : ''} ${esc(fromLabel)}${f.s.some(x => x.book) ? '<br>Touche un horaire pour réserver ta place.' : ''}</p>
+    ${groups.map(g => `<div class="lbl">${VERS[g] || esc(g)}</div><div class="allseas">${f.s.filter(x => x.v === g).map(chip).join('')}</div>`).join('')}
+    <a class="linkbtn" href="${allo}" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:14px;color:#7C2D12">Voir la fiche du film sur AlloCiné ›</a>
+    <button class="big ink" data-act="close" style="margin-top:8px">Fermer</button>`;
+}
 /* Réglage de l'heure : « Maintenant », « Toute la journée », ou le soleil */
 function setHourHTML() {
   const today = S.day === 0, floor = today ? Math.min(DIAL_MAX, ceil15(nowMin())) : DIAL_MIN;
@@ -1238,6 +1256,8 @@ function sheetHTML() {
       <button class="big ink" id="f-send" data-act="share">${ICON.send} Ouvrir WhatsApp</button>`;
   } else if (S.sheet === 'valid') {
     body = validSheetBody(false);
+  } else if (String(S.sheet).startsWith('seas:')) {
+    body = allSeasHTML(filmsFor().find(x => x.id === S.sheet.slice(5)), dayLong(S.day).replace(/^./, c => c.toUpperCase()), hourText() === 'toute la journée' ? 'dans la journée' : hourText());
   } else if (S.sheet === 'cinpick') {
     body = `<h2>Choisir un cinéma</h2>` + pickerHTML();
   }
@@ -1354,7 +1374,7 @@ function packFilm(f) {
   return {
     id: String(f.id), t: f.t, d: f.d || 0, g: f.g || '', yt: f.yt || null,
     backdrop: wideImg(f) || null, poster: safeUrl(f.poster) || null, allo: safeUrl(f.allo) || null, sortie: f.sortie || null,
-    s: f.s.map(x => ({ h: x.h, v: x.v, ap: !!x.ap, book: safeUrl(x.book) || null }))
+    s: f.s.map(x => ({ h: x.h, v: x.v, ...(x.fx ? { fx: String(x.fx).slice(0, 30) } : {}), ap: !!x.ap, book: safeUrl(x.book) || null }))
   };
 }
 
@@ -1607,7 +1627,7 @@ function relanceHref() {
 }
 function decisionHref() {
   const D = G.doc, dc = D.decision, f = filmById(dc.filmId);
-  const txt = `C’est décidé ! 🍿\n\nOn va voir « ${dc.t} »${f && f.d ? ' (' + fmtDur(f.d) + ')' : ''}\n${D.jour.replace(/^./, c => c.toUpperCase())} à ${dc.h}${dc.v !== 'VF' ? ' en ' + dc.v : ''}\n${D.cinema.name}\n\n` +
+  const txt = `C’est décidé ! 🍿\n\nOn va voir « ${dc.t} »${f && f.d ? ' (' + fmtDur(f.d) + ')' : ''}\n${D.jour.replace(/^./, c => c.toUpperCase())} à ${dc.h}${dc.v !== 'VF' ? ' en ' + dc.v : ''}${dc.fx ? ' (' + dc.fx + ')' : ''}\n${D.cinema.name}\n\n` +
     (safeUrl(dc.book) ? `Réserve ta place : ${safeUrl(dc.book)}\n\n` : '') + `Le récap : ${groupLink()}\n\nChoisi avec Pot’corn`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
@@ -1615,7 +1635,7 @@ function gDecHTML() {
   const dc = G.doc.decision; if (!dc) return '';
   const f = filmById(dc.filmId), book = safeUrl(dc.book);
   return `<div class="decban"><span class="kick">C’EST DÉCIDÉ !</span><h2>${esc(dc.t)}</h2>
-    <p>${esc(G.doc.jour)} à ${esc(dc.h)}${dc.v !== 'VF' ? ' · ' + esc(dc.v) : ''}${f && f.d ? ' · ' + fmtDur(f.d) : ''}<br>${esc(G.doc.cinema.name)}</p>
+    <p>${esc(G.doc.jour)} à ${esc(dc.h)}${dc.v !== 'VF' ? ' · ' + esc(dc.v) : ''}${dc.fx ? ' · ' + esc(dc.fx) : ''}${f && f.d ? ' · ' + fmtDur(f.d) : ''}<br>${esc(G.doc.cinema.name)}</p>
     ${book ? `<a class="big ink" href="${book}" target="_blank" rel="noopener">Réserver ma place</a>` : ''}
     <a class="big cream" href="${decisionHref()}" target="_blank" rel="noopener">${ICON.send} Prévenir le groupe sur WhatsApp</a>
     ${isCreator() && !ended() ? '<button class="linkbtn" data-act="gundecide">Changer d’avis</button>' : ''}</div>`;
@@ -1653,7 +1673,7 @@ const filmImg = f => wideImg(f) || safeUrl(f.poster);
 const bgStyle = img => img ? ` style="background-image:url(${img})"` : '';
 const playBtn = (f, cls) => f.yt ? `<button class="${cls}" data-act="video" data-v="${esc(f.yt)}" aria-label="Bande-annonce de ${esc(f.t)}">${ICON.play}</button>` : '';
 const avatars = P => `<span class="avs">${P.map((p, i) => `<span class="av" style="background:${AVC[i % AVC.length]}">${initial(p.prenom)}</span>`).join('')}</span>`;
-const seasChips = r => r.seas.length ? r.seas.map(x => `<span class="chip">${esc(lab(x))}</span>`).join('') : '<span class="nosea">Pas de séance quand tout le monde est dispo</span>';
+const seasChips = r => r.seas.length ? r.seas.map(x => `<span class="chip">${chipIn(x)}</span>`).join('') : '<span class="nosea">Pas de séance quand tout le monde est dispo</span>';
 /* 1 · Le film en tête, en grand */
 function leaderHTML(r, R) {
   const f = r.f, isMatch = R.matches.includes(r), pct = R.n ? Math.round(r.fans.length / R.n * 100) : 0;
@@ -1689,10 +1709,10 @@ function ticketHTML(R) {
     <div class="thead"><span>C’est décidé !</span><small>BILLET POUR ${R.n || 1}</small></div>
     ${f && filmImg(f) ? `<div class="tmedia2"${bgStyle(filmImg(f))}>${playBtn(f, 'lplay')}</div>` : ''}
     <div class="tinfo"><b>${esc(dc.t)}</b>
-      <span>${esc(D.jour.replace(/^./, c => c.toUpperCase()))} · ${esc(dc.h)}${dc.v !== 'VF' ? ' · ' + esc(dc.v) : ''}${f && f.d ? ' · ' + fmtDur(f.d) : ''}</span>
+      <span>${esc(D.jour.replace(/^./, c => c.toUpperCase()))} · ${esc(dc.h)}${dc.v !== 'VF' ? ' · ' + esc(dc.v) : ''}${dc.fx ? ' · ' + esc(dc.fx) : ''}${f && f.d ? ' · ' + fmtDur(f.d) : ''}</span>
       <small>${esc(D.cinema.name)}</small></div>
-    <div class="tacts">${book ? `<a class="big ink" href="${book}" target="_blank" rel="noopener">Réserver ma place</a>` : ''}
-      <a class="big or" href="${decisionHref()}" target="_blank" rel="noopener">${ICON.send} Prévenir le groupe sur WhatsApp</a></div>
+    ${G.joined && isAbsent(G.me) ? '' : `<div class="tacts">${book ? `<a class="big ink" href="${book}" target="_blank" rel="noopener">Réserver ma place</a>` : ''}
+      <a class="big or" href="${decisionHref()}" target="_blank" rel="noopener">${ICON.send} Prévenir le groupe sur WhatsApp</a></div>`}
   </div>
   ${goers.length ? `<div class="rstat">${avatars(R.P)}<span>${listNames(goers)} ${goers.length > 1 ? 'y vont' : 'y va'}</span></div>` : ''}
   ${isCreator() && !ended() ? '<button class="linkbtn" data-act="gundecide" style="align-self:center">Changer d’avis</button>' : ''}`;
@@ -1784,6 +1804,7 @@ function gSheetHTML() {
   if (!G.sheet) return '';
   let body = '';
   if (G.sheet === 'valid') body = validSheetBody(true);
+  else if (String(G.sheet).startsWith('seas:')) body = allSeasHTML(deckFor(myDispo()).find(x => x.id === G.sheet.slice(5)), G.doc.jour.replace(/^./, c => c.toUpperCase()), myDispo() ? fromText(myDispo()) : gToday() ? 'à venir' : 'dans la journée');
   else if (G.sheet === 'absent') body = absentSheetBody();
   else if (G.sheet === 'cancel') {
     body = `<h2>Annuler la séance ?</h2>
@@ -1794,7 +1815,7 @@ function gSheetHTML() {
     const r = gResults().rows.find(x => x.f.id === G.sheet.slice(2)); if (!r) { G.sheet = null; return ''; }
     body = `<h2>C’est décidé ?</h2>
       <p class="note"><b>${esc(r.f.t)}</b> · ${esc(G.doc.jour)}<br>Choisis la séance : tout le groupe verra le choix, avec le lien pour réserver.</p>` +
-      r.seas.map((x, i) => `<button class="opt" data-act="gdecideok" data-v="${i}"><span>${esc(lab(x))}</span><small>${x.book ? 'réservation en ligne' : ''}</small></button>`).join('');
+      r.seas.map((x, i) => `<button class="opt" data-act="gdecideok" data-v="${i}"><span>${chipIn(x)}</span><small>${x.book ? 'réservation en ligne' : ''}</small></button>`).join('');
   }
   return `<div class="sheetbg" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true"><span class="grip"></span>${body}</div>`;
 }
@@ -1803,7 +1824,7 @@ async function gSetDecision(i) {
   G.sheet = null;
   try {
     const fb = await getFB();
-    await fb.fs.updateDoc(fb.fs.doc(fb.db, 'seances', G.code), { decision: { filmId: r.f.id, t: r.f.t, h: x.h, v: x.v, ap: !!x.ap, book: x.book || null, n: Date.now() } });
+    await fb.fs.updateDoc(fb.fs.doc(fb.db, 'seances', G.code), { decision: { filmId: r.f.id, t: r.f.t, h: x.h, v: x.v, fx: x.fx || null, ap: !!x.ap, book: x.book || null, n: Date.now() } });
     toast('C’est décidé ! Préviens le groupe sur WhatsApp'); window.scrollTo(0, 0);
   } catch (e) { console.error(e); toast('Le choix n’a pas pu être enregistré.'); }
   renderGroup();
@@ -1921,6 +1942,7 @@ document.addEventListener('click', e => {
     case 'tab': switchTab(v); break;
     case 'sheet': S.sheet = v; render(); break;
     case 'close': if (G.on) G.sheet = null; else S.sheet = null; render(); break;
+    case 'allseas': if (G.on) { G.sheet = 'seas:' + v; renderGroup(); } else { S.sheet = 'seas:' + v; render(); } break;
     /* Réglages : le panneau reste ouvert, la liste se met à jour derrière */
     case 'setcin': useCinema({ id: v, name: b.dataset.n || v, city: b.dataset.c || '' }); render(); break;
     case 'fav': toggleFav({ id: v, name: b.dataset.n || v, city: b.dataset.c || '' }); break;

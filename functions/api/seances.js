@@ -27,7 +27,7 @@ const TZ = 'Europe/Paris';
 const RECHECK_MS = 60 * 60 * 1000;   // le mardi, au plus une vérification par heure
 const DAYS = 8;                      // aujourd'hui + 7 jours
 const TMDB_IMG = 'https://image.tmdb.org/t/p/';
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';   // v3 : formats des séances (IMAX, 4DX…)
 // Offre gratuite Cloudflare : 50 appels externes maximum par visite. On en garde 4 de marge.
 const BUDGET = 46;
 const ALLO_MAX = 30;                       // part réservée à AlloCiné (8 jours + pages en plus)                // à changer si le format des données change
@@ -80,6 +80,14 @@ function version(key, st) {
   if (k.startsWith('original') || dv.startsWith('ORIGINAL')) return 'VOST';
   return 'VF';
 }
+// Salles et formats spéciaux (AlloCiné : projection et experience). « PLF » (grand écran premium) est trop vague : ignoré.
+const FX = [['IMAX', 'IMAX'], ['DOLBY_CINEMA', 'Dolby Cinema'], ['E_4DX', '4DX'], ['SCREEN_X', 'ScreenX'], ['ICE', 'ICE'], ['ONYX_LED', 'Onyx'], ['F_3D', '3D'], ['DOLBY_ATMOS', 'Atmos']];
+function formats(st) {
+  const raw = [...(st?.projection || []), ...(st?.experience || [])].map(x => String(x).toUpperCase());
+  const out = FX.filter(([k]) => raw.includes(k)).map(([, l]) => l);
+  if (out.includes('Dolby Cinema')) return out.filter(l => l !== 'Atmos').join(' ');   // le son Atmos fait partie du Dolby Cinema
+  return out.join(' ');
+}
 function bookingUrl(st) {
   const t = st?.data?.ticketing || st?.ticketing;
   if (!Array.isArray(t)) return null;
@@ -118,14 +126,15 @@ function parseResults(pages) {
         if (!Array.isArray(arr)) continue;
         for (const st of arr) {
           const at = st?.startsAt; if (!at || at.length < 16) continue;
-          f.s.push({ d: at.slice(0, 10), h: at.slice(11, 16), v: version(gk, st), book: bookingUrl(st), ap: st?.isPreview === true });
+          const fx = formats(st);
+          f.s.push({ d: at.slice(0, 10), h: at.slice(11, 16), v: version(gk, st), ...(fx ? { fx } : {}), book: bookingUrl(st), ap: st?.isPreview === true });
         }
       }
     }
   }
   const out = [...films.values()].map(f => {
     const seen = new Set();
-    f.s = f.s.filter(x => { const k = x.d + x.h + x.v; if (seen.has(k)) return false; seen.add(k); return true; })
+    f.s = f.s.filter(x => { const k = x.d + x.h + x.v + (x.fx || ''); if (seen.has(k)) return false; seen.add(k); return true; })
       .sort((a, b) => (a.d + a.h).localeCompare(b.d + b.h));
     return f;
   }).filter(f => f.s.length);
