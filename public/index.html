@@ -78,6 +78,7 @@ a.chip{color:var(--ink);text-decoration:none}
 .stub .chips{flex:1;min-width:0;height:64px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:6px;overflow:hidden}
 .stub .chip{line-height:17px}
 .chip[hidden]{display:none!important}
+.card.short .stub .chips{height:29px}
 .chip.more{background:var(--sand)}
 .chip{font-size:13px;font-weight:800;background:var(--teal);color:var(--ink);border-radius:6px;padding:6px 9px}
 .allo{flex:none;margin-left:auto;font-size:12px;font-weight:700;color:#7C2D12;padding-top:7px;white-space:nowrap}
@@ -405,6 +406,7 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .sdcap{position:absolute;left:0;right:0;bottom:9px;text-align:center;font-size:12px;font-weight:700;color:#3d3830;pointer-events:none}
 .sdhint{position:absolute;top:8px;right:12px;font-size:10px;font-weight:700;color:#4A453D;opacity:.8;pointer-events:none}
 .sdial.is-night .sdlab,.sdial.is-night .sdcap,.sdial.is-night .sdhint{color:var(--cream)}.sdial.is-night .sdlab small{color:#D9D3C8}
+.restart{align-self:center;margin:4px auto 0;color:#ddd;display:flex;align-items:center;justify-content:center;gap:6px}.restart svg{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -837,8 +839,36 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
 }
 /* Toutes les cartes ont la même taille : le titre tient sur 2 lignes (on réduit la police si besoin)
    et les horaires sur 2 rangées (les suivants sont regroupés dans « +N », qui ouvre AlloCiné) */
+function fitChips(card) {
+  const box = card.querySelector('.stub .chips'); if (!box) return;
+  const chips = [...box.querySelectorAll('.chip:not(.more)')], more = box.querySelector('.more');
+  chips.forEach(c => { c.hidden = false; }); more.hidden = true;
+  if (box.scrollHeight <= box.clientHeight + 1) return;
+  more.hidden = false;
+  let n = 0;
+  while (box.scrollHeight > box.clientHeight + 1 && n < chips.length) { n++; chips[chips.length - n].hidden = true; more.textContent = '+' + n; more.setAttribute('aria-label', `${n} autre${n > 1 ? 's' : ''} séance${n > 1 ? 's' : ''} sur AlloCiné`); }
+}
+/* Les horaires ont 2 rangées seulement si au moins un film du jour en a besoin (sinon 1 rangée pour toutes les cartes) */
+let _deckAll = [], _rowsKey = '', _twoRows = true;
+function needTwoRows(width) {
+  const key = width + '|' + _deckAll.map(f => f.id + ':' + f.s.length).join(',');
+  if (key === _rowsKey) return _twoRows;
+  const st = document.createElement('div'); st.className = 'stub';
+  st.style.cssText = `position:absolute;left:-9999px;top:0;visibility:hidden;border:0;padding:0;margin:0;width:${width}px`;
+  st.innerHTML = '<div class="chips" style="height:auto;flex:none;width:100%"></div>';
+  document.body.appendChild(st);
+  const box = st.firstChild; let two = false;
+  for (const f of _deckAll) {
+    box.innerHTML = f.s.map(x => `<span class="chip">${esc(lab(x))}</span>`).join('');
+    if (box.scrollHeight > 40) { two = true; break; }
+  }
+  st.remove(); _rowsKey = key; _twoRows = two; return two;
+}
 function fitCards() {
+  const fc = document.querySelector('.card.front .stub .chips');
+  const oneRow = fc && _deckAll.length ? !needTwoRows(fc.clientWidth) : false;
   document.querySelectorAll('.card').forEach(card => {
+    card.classList.toggle('short', oneRow);
     const t = card.querySelector('.ctitle');
     if (t) {
       // 20 px sur 2 lignes au plus ; si c'est trop long, police plus petite (3 lignes possibles à partir de 16 px)
@@ -848,17 +878,31 @@ function fitCards() {
         t.style.webkitLineClamp = t.style.lineClamp = size <= 16 ? '3' : '2';
       }
     }
-    const box = card.querySelector('.stub .chips'); if (!box) return;
-    const chips = [...box.querySelectorAll('.chip:not(.more)')], more = box.querySelector('.more');
-    chips.forEach(c => { c.hidden = false; }); more.hidden = true;
-    if (box.scrollHeight <= box.clientHeight + 1) return;
-    more.hidden = false;
-    let n = 0;
-    while (box.scrollHeight > box.clientHeight + 1 && n < chips.length) { n++; chips[chips.length - n].hidden = true; more.textContent = '+' + n; more.setAttribute('aria-label', `${n} autre${n > 1 ? 's' : ''} séance${n > 1 ? 's' : ''} sur AlloCiné`); }
+    fitChips(card);
   });
+  fitStage();
+}
+/* Petit écran (barre d'adresse du navigateur…) : on réduit un peu la photo pour que la carte,
+   « Annuler » et « J'ai fini » tiennent au-dessus des onglets du bas, sans avoir à faire défiler.
+   Sur les très petits écrans, les horaires passent aussi sur une seule rangée (+N pour les autres). */
+function fitStage() {
+  const front = document.querySelector('.card.front'); if (!front) return;
+  const cards = [...document.querySelectorAll('.card')], medias = cards.map(c => c.querySelector('.media')).filter(Boolean);
+  medias.forEach(m => { m.style.height = ''; m.style.aspectRatio = ''; });
+  const fm = front.querySelector('.media'); if (!fm) return;
+  const nav = document.querySelector('.nav'), under = document.querySelector('.under');
+  const room = () => window.innerHeight - (nav ? nav.offsetHeight : 0) - (front.getBoundingClientRect().top + window.scrollY) - (under ? under.offsetHeight + 16 : 0) - 12;
+  let extra = front.offsetHeight - room();
+  if (extra <= 0) return;
+  if (fm.offsetHeight - extra < 160 && !front.classList.contains('short')) { cards.forEach(c => { c.classList.add('short'); fitChips(c); }); extra = front.offsetHeight - room(); }
+  if (extra <= 0) return;
+  const h = Math.max(120, Math.round(fm.offsetHeight - extra));
+  medias.forEach(m => { m.style.aspectRatio = 'auto'; m.style.height = h + 'px'; });
 }
 if (document.fonts) document.fonts.ready.then(fitCards);
-window.addEventListener('resize', () => { clearTimeout(window._fitT); window._fitT = setTimeout(fitCards, 150); });
+// La barre d'adresse qui apparaît / disparaît change la hauteur : on ne recalcule que si la largeur change
+let _fitW = window.innerWidth;
+window.addEventListener('resize', () => { if (window.innerWidth === _fitW) return; _fitW = window.innerWidth; clearTimeout(window._fitT); window._fitT = setTimeout(fitCards, 150); });
 /* Sous la carte : pas de gros boutons (on glisse), juste « Annuler » et « J'ai fini ».
    Les boutons de choix restent présents mais invisibles, pour les lecteurs d'écran. */
 function underBar(canUndo, undoAct, finishAct, finishLabel) {
@@ -953,6 +997,7 @@ function renderHome() {
       (kept.length ? selGrid(kept, L.coeur, 'unkeep')
         : `<div class="empty"><p>Tu n’as encore gardé aucun film.</p><button class="big cream" data-act="tab" data-v="films">Choisir mes films</button></div>`) +
       removedHTML(removed, 'rekeep', S.showRemoved) +
+      (kept.length || removed.length ? `<button class="linkbtn restart" data-act="reset">${ICON.undo} Recommencer mes choix</button>` : '') +
       `<div class="ctabar">${FIREBASE_CONFIG
         ? `<button class="big or" data-act="valid">${ICON.group} Valider et inviter mes potes</button>
            ${kept.length ? '<button class="linkbtn" data-act="sheet" data-v="share">ou juste envoyer ma sélection sur WhatsApp</button>' : ''}`
@@ -969,7 +1014,7 @@ function renderHome() {
   else if (!deck.length) stage = `<div class="empty"><h2>Tous vus !</h2><p>Tu as passé les ${all.length} films${kept.length ? ` et tu en as gardé ${kept.length}` : ''}.</p>
       <button class="big or" data-act="tab" data-v="sel">Valider ma sélection ›</button><button class="ghost" data-act="reset">Tout recommencer</button></div>`;
   else {
-    const num = all.length - deck.length + 1, top = deck[0], next = deck[1];
+    const num = all.length - deck.length + 1, top = deck[0], next = deck[1]; _deckAll = all;
     stage = (next ? cardHTML(next, num + 1, all.length, false) : '') + cardHTML(top, num, all.length, true);
   }
   $app.innerHTML = BRAND + stepKick(1, 'Je choisis mes films') + setLine() + resumeHTML() +
@@ -1490,7 +1535,7 @@ function gFilmsHTML(all, rest) {
       <button class="ghost" data-act="greset">Recommencer mes choix</button></div>`;
   }
   const ctx = { group: true, playing: G.playing, date: new Date(D.jourISO + 'T00:00:00'), others: othersHTML };
-  const num = all.length - rest.length + 1, top = rest[0], next = rest[1];
+  const num = all.length - rest.length + 1, top = rest[0], next = rest[1]; _deckAll = all;
   return h + `<div class="stage cards">${next ? cardHTML(next, num + 1, all.length, false, ctx) : ''}${cardHTML(top, num, all.length, true, ctx)}</div>
     ${underBar(G.hist.length > 0, 'gundo', 'gfinish', 'J’ai fini')}`;
 }
@@ -1535,6 +1580,7 @@ function gSelHTML(left) {
     : `<p class="msg">Tu n’as gardé aucun film${G.joined ? '.' : ' pour l’instant. Tu peux quand même valider : tes potes sauront que rien ne te tente.'}</p>`;
   h += removedHTML(removed, 'grekeep', G.showRemoved);
   if (ended()) return h;
+  if (M.kept.length || M.removed.length) h += `<button class="linkbtn restart" data-act="greset">${ICON.undo} Recommencer mes choix</button>`;
   if (!G.joined) {
     h += `<div class="ctabar"><button class="big or" data-act="valid">Valider mes choix</button>
       ${left ? `<button class="linkbtn" data-act="tab" data-v="films">Continuer à choisir (${left} film${left > 1 ? 's' : ''} restant${left > 1 ? 's' : ''})</button>` : ''}
@@ -1895,7 +1941,7 @@ document.addEventListener('click', e => {
     case 'undo': undo(); break;
     case 'finish': switchTab('sel'); break;
     case 'stop': if (G.on) G.playing = null; else S.playing = null; render(); break;
-    case 'reset': saveList({ kept: [], removed: [], hist: [] }); S.tab = 'films'; render(); break;
+    case 'reset': if (!confirmReset()) break; saveList({ kept: [], removed: [], hist: [] }); S.tab = 'films'; render(); window.scrollTo(0, 0); toast('C’est reparti : tous les films sont de retour'); break;
     case 'unkeep': { const L = getList(); L.kept = L.kept.filter(x => x !== v); L.removed.push(v); if (L.coeur === v) L.coeur = null; saveList(L); render(); break; }
     case 'rekeep': { const L = getList(); L.removed = L.removed.filter(x => x !== v); L.kept.push(v); saveList(L); render(); break; }
     case 'toggleRemoved': if (G.on) { G.showRemoved = !G.showRemoved; renderGroup(); } else { S.showRemoved = !S.showRemoved; render(); } break;
@@ -1920,7 +1966,7 @@ document.addEventListener('click', e => {
     case 'greset':
       if (!G.me || !confirmReset()) break;
       Object.assign(G.me, { kept: [], removed: [], coeur: null }); G.hist = [];
-      saveMine(); G.tab = 'films'; renderGroup(); window.scrollTo(0, 0); break;
+      saveMine(); G.tab = 'films'; renderGroup(); window.scrollTo(0, 0); toast('C’est reparti : tous les films sont de retour'); break;
     case 'copylink':
       (navigator.clipboard ? navigator.clipboard.writeText(groupLink()) : Promise.reject()).then(() => toast('Lien copié : colle-le où tu veux'), () => toast(groupLink()));
       break;
