@@ -14,7 +14,7 @@
 html,body{margin:0;background:var(--ink);color:#fff;font-family:Inter,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 button{font:inherit;cursor:pointer}
 a{color:var(--or)}
-.wrap{max-width:440px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;gap:12px;padding:10px 14px calc(72px + env(safe-area-inset-bottom))}
+.wrap{max-width:440px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;gap:12px;padding:10px 14px calc(100px + env(safe-area-inset-bottom))}
 .demo{font-size:11px;text-align:center;color:#8f8f8f;line-height:1.5}
 .brand{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .logo{display:flex;align-items:center;gap:8px;font-family:'Rubik Mono One',sans-serif;font-size:20px;color:var(--cream);letter-spacing:.02em;text-decoration:none}
@@ -129,7 +129,7 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 .dark .field input{border-color:#555}
 .msg{font-size:14px;line-height:1.5;color:var(--muted);margin:0}
 .quote{background:var(--ink2);border-radius:12px;padding:10px 12px;font-style:italic}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:50;background:var(--cream);color:var(--ink);font-weight:700;font-size:14px;padding:12px 18px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
+.toast{pointer-events:none;position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top));transform:translateX(-50%);z-index:50;background:var(--cream);color:var(--ink);font-weight:700;font-size:14px;padding:12px 18px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:90vw;text-align:center}
 /* ---------- Séance entre potes ---------- */
 .gbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border-radius:999px;border:2px solid var(--or);background:transparent;color:var(--or);font-weight:800;font-size:15px;text-decoration:none}
 .recap{background:#fff;border-radius:12px;padding:10px 14px;font-size:14px;line-height:1.45}
@@ -194,6 +194,45 @@ label.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weigh
 @keyframes stN{0%,26%,100%{opacity:0}12%{opacity:.9}}
 @keyframes stK{0%,26%,54%,100%{opacity:0}40%{opacity:.9}}
 @keyframes stC{0%,54%,86%,100%{opacity:0}70%{opacity:.9}}
+/* ---------- Parcours en 3 étapes ---------- */
+.stepk{font-size:13px;font-weight:700;color:#d6d6d6;margin-top:-2px}
+.stepk span{color:var(--or);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:11px}
+.setline{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:14px;background:var(--cream);color:var(--ink);padding:10px 12px;min-height:52px;text-align:left;font-size:15px}
+.setline svg{flex:none;color:var(--or)}
+.setline .st{flex:1;min-width:0;line-height:1.3}
+.setline .sm{flex:none;font-size:13px;font-weight:800;color:#7C2D12;text-decoration:underline}
+.resume{display:flex;align-items:center;gap:8px;background:#21302E;color:#CFF3EC;border-radius:12px;padding:10px 12px;text-decoration:none;font-size:13px;font-weight:600;min-height:44px}
+.resume span{flex:1}.resume b{color:var(--teal)}.resume svg{color:var(--teal);flex:none}
+.gline{display:flex;align-items:center;gap:8px;background:var(--ink2);border-radius:12px;padding:10px 12px;font-size:14px;color:#ddd;line-height:1.3}
+.gline svg{color:var(--or);flex:none}.gline b{color:#fff}
+.tip{background:#2E2416;border:1px solid #5A3D1A;color:#F6D9B5;border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45}
+.tip b{color:var(--or)}
+.pagehead2 h1{font-family:'Rubik Mono One',sans-serif;font-size:19px;margin:0}
+.pagehead2 p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.ctabar{position:sticky;bottom:calc(84px + env(safe-area-inset-bottom));z-index:5;display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:16px;margin-top:auto;background:linear-gradient(to bottom,rgba(27,27,27,0),var(--ink) 18px)}
+.ctabar .linkbtn{color:#ddd}
+.invcard{background:var(--cream);color:var(--ink);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.invcard h2{font-family:'Rubik Mono One',sans-serif;font-size:18px;margin:0}
+.invcard p{margin:0;font-size:14px;line-height:1.45;color:#3d3830}
+.invcard .linkbtn{color:#7C2D12;align-self:center}
+.okcard{background:#21302E;color:#CFF3EC;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
+.okcard svg{color:var(--teal);flex:none}
+.waitcard{background:var(--ink2);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.waitcard span{color:var(--muted);font-size:13px;line-height:1.45}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:15;background:rgba(20,20,20,.97);border-top:1px solid #333;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+.nav .in{max-width:440px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tab{border:0;background:transparent;color:#9a9a9a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px 2px;min-height:60px;border-radius:12px;font-size:12px;font-weight:700}
+.tab .n{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.tab .l{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tab .l i{font-style:normal;background:var(--or);color:var(--ink);border-radius:9px;min-width:18px;height:18px;padding:0 5px;font-size:11px;display:inline-flex;align-items:center;justify-content:center}
+.tab.on{color:var(--or);background:#2A2118}
+.tab.ok .n{background:var(--teal);border-color:var(--teal);color:var(--ink)}
+.tab.lock{opacity:.5}
+.chips2{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.sheet .lbl{margin-top:16px}
+.sheet .dchip{color:var(--ink);border-color:#BDB6A8;background:#fff}
+.sheet .dchip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.sheet .dchip:disabled{opacity:.35}
 @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
 </style>
 </head>
@@ -285,7 +324,7 @@ function dayLong(i) { const d = DAYS[i]; return JOURS[d.getDay()] + ' ' + d.getD
 
 /* ---------- État ---------- */
 const S = {
-  view: 'deck', sheet: null, playing: null,
+  tab: 'films', sheet: null, playing: null,
   cin: store.get('cine:cin', CINEMAS[0].id), day: 0, hour: -1,
   prenom: store.get('cine:prenom', ''), mot: '', showRemoved: false, autoDone: false
 };
@@ -362,17 +401,67 @@ function isNew(f, day = DAYS[S.day]) {
 const lab = x => x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : '');
 const seaTxt = f => f.s.map(lab).join(' · ');
 
-/* ---------- Écran : les cartes ---------- */
-function topBar(n) {
-  return `${BRAND}
-  <div class="topbar">
-    <button class="tk tk-o" data-act="sheet" data-v="cin"><small>Cinéma</small><b>${esc(cin().short)}</b></button>
-    <button class="tk tk-t" data-act="sheet" data-v="day"><small>Jour</small><b>${dayShort(S.day)}</b></button>
-    <button class="tk tk-c" data-act="sheet" data-v="hour"><small>Dès</small><b>${hourShort()}</b></button>
-    <button class="selbtn" data-act="go" data-v="sel" aria-label="Ma sélection, ${n} films">${ICON.cards}${n ? `<span class="count">${n}</span>` : ''}</button>
-  </div>`;
+/* =====================================================================
+   PARCOURS EN 3 ÉTAPES (barre du bas)
+   ① Les films (je choisis)  ② Ma sélection (je valide / j'invite)  ③ Résultats
+   ===================================================================== */
+Object.assign(ICON, {
+  pin: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+  lock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+});
+const dayText = i => i === 0 ? 'aujourd’hui' : i === 1 ? 'demain' : dayLong(i);
+function stepKick(n, label) { return `<div class="stepk"><span>Étape ${n} sur 3</span> · ${label}</div>`; }
+function navHTML(tab, o = {}) {
+  const it = (k, n, label, x = {}) => `<button class="tab${tab === k ? ' on' : ''}${x.ok ? ' ok' : ''}${x.lock ? ' lock' : ''}" data-act="tab" data-v="${k}"${tab === k ? ' aria-current="step"' : ''}>
+      <span class="n">${x.ok ? ICON.oks : x.lock ? ICON.lock : n}</span><span class="l">${label}${x.cnt ? `<i>${x.cnt}</i>` : ''}</span></button>`;
+  return `<nav class="nav" aria-label="Les étapes"><div class="in">${it('films', 1, 'Les films', { ok: o.okFilms })}${it('sel', 2, 'Ma sélection', { ok: o.okSel, cnt: o.cnt })}${it('res', 3, 'Résultats', { lock: o.lockRes })}</div></nav>`;
 }
-/* ctx (mode entre potes) : { group: true, playing: id du film en lecture, date: jour de la séance } */
+/* Réglages lisibles en une ligne (cinéma · jour · heure) */
+function setLine() {
+  return `<button class="setline" data-act="sheet" data-v="set" aria-label="Modifier le cinéma, le jour ou l'heure">${ICON.pin}
+    <span class="st"><b>${esc(cin().short)}</b> · ${esc(dayText(S.day))} · ${esc(hourText())}</span><span class="sm">Modifier</span></button>`;
+}
+function resumeHTML() {
+  const lg = store.get('cine:lastGroup', null);
+  if (!lg || !lg.code || lg.jour < iso(new Date())) return '';
+  return `<a class="resume" href="${base()}?g=${esc(lg.code)}">${ICON.group}<span>Tu as une séance entre potes en cours</span><b>Voir ›</b></a>`;
+}
+function selGrid(films, coeur, rmAct) {
+  return `<div class="grid">${films.map(f => `<div class="mini">
+      <button class="rm" data-act="${rmAct}" data-v="${esc(f.id)}" aria-label="Retirer ${esc(f.t)}">${ICON.xs}</button>
+      ${f.yt ? `<button class="thumb" data-act="video" data-v="${esc(f.yt)}" aria-label="Bande-annonce de ${esc(f.t)}"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><span>${ICON.play}</span></button>` : `<div class="thumb"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"></div>`}
+      <div class="t">${esc(f.t)}</div><div class="d">${f.d ? fmtDur(f.d) : '—'}${f.id === coeur ? ` <span class="mheart">${ICON.hs} coup de cœur</span>` : ''}</div><div class="s">${seaTxt(f) || '—'}</div></div>`).join('')}</div>`;
+}
+function removedHTML(films, act, open) {
+  if (!films.length) return '';
+  return `<button class="ghost" data-act="toggleRemoved">${open ? 'Masquer' : 'Revoir'} les films éliminés (${films.length})</button>` +
+    (open ? `<div class="list">${films.map(f => `<div class="row"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><div class="grow">${esc(f.t)}${f.d ? ' · ' + fmtDur(f.d) : ''}</div><button class="smallbtn" data-act="${act}" data-v="${esc(f.id)}">Garder</button></div>`).join('')}</div>` : '');
+}
+/* Heures proposées au moment de valider */
+function dispoOptions(today) {
+  const now = today ? nowMin() : 0;
+  const o = [{ v: now, l: now ? 'Dès maintenant' : 'Peu importe' }];
+  for (const h of [840, 960, 1020, 1080, 1140, 1200, 1260, 1320]) if (h > now + 15) o.push({ v: h, l: 'Dès ' + hm(h) });
+  return o;
+}
+const VAL = { prenom: null, dispo: null };   // la feuille « Valider » (prénom + heure)
+function validSheetBody(group) {
+  const opts = dispoOptions(group ? gToday() : S.day === 0);
+  if (VAL.prenom == null) VAL.prenom = S.prenom;
+  if (VAL.dispo == null || !opts.some(o => o.v === VAL.dispo)) {
+    const pref = group ? (G.me && G.me.dispo) : (S.hour > 0 ? S.hour : null);
+    VAL.dispo = opts.some(o => o.v === pref) ? pref : opts[0].v;
+  }
+  return `<h2>${group ? 'Valider mes choix' : 'Valider et inviter mes potes'}</h2>
+    <label class="field">Ton prénom<input id="v-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(VAL.prenom)}" placeholder="Ex. : ${group ? 'Julie' : 'Seb'}"></label>
+    <div class="lbl">TU ES DISPO À PARTIR DE QUAND ?</div>
+    <div class="chips2">${opts.map(o => `<button class="dchip${o.v === VAL.dispo ? ' on' : ''}" data-act="vdispo" data-v="${o.v}" aria-pressed="${o.v === VAL.dispo}">${o.l}</button>`).join('')}</div>
+    <p class="note" style="margin-top:12px">${group ? 'Tes potes verront ton prénom et tes choix. Tu pourras encore les modifier.' : 'Ta séance va être créée : il ne restera plus qu’à envoyer le lien à tes potes.'}</p>
+    <button class="big ink" data-act="validok">${group ? 'Valider et voir les résultats' : 'Valider'}</button>`;
+}
+
+/* ---------- Carte de film ---------- */
+/* ctx (mode entre potes) : { group: true, playing: id du film en lecture, date: jour de la séance, others: bandeau « gardé par » } */
 function cardHTML(f, num, total, isTop, ctx = {}) {
   const vers = [...new Set(f.s.map(x => x.v))].join(' · ');
   const playing = isTop && (ctx.group ? ctx.playing : S.playing) === f.id && f.yt;
@@ -387,7 +476,7 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
        <button class="backposter" data-act="stop">Revenir à l'affiche</button>`
     : picture + (f.yt ? `<span class="playbtn">${ICON.play}</span>` : '');
   const allo = safeUrl(f.allo) || `https://www.allocine.fr/rechercher/?q=${encodeURIComponent(f.t)}`;
-  return `<article class="card ${isTop ? 'front' : 'behind'}${ctx.group ? ' gcard' : ''}" data-id="${esc(f.id)}" aria-label="${esc(f.t)}">
+  return `<article class="card ${isTop ? 'front' : 'behind'}" data-id="${esc(f.id)}" aria-label="${esc(f.t)}">
     <div class="chead"><span>N° ${String(num).padStart(2, '0')} / ${String(total).padStart(2, '0')}</span>${f.s.some(x => x.ap) ? '<span class="badge">AVANT-PREMIÈRE</span>' : isNew(f, ctx.date) ? '<span class="badge">SORTIE DE LA SEMAINE</span>' : ''}</div>
     <div class="media" role="button" aria-label="${f.yt ? 'Lire la bande-annonce' : 'Affiche'}">${media}</div>
     <div class="ctitle">${esc(f.t)}</div>${ctx.others ? ctx.others(f) : ''}
@@ -397,48 +486,12 @@ function cardHTML(f, num, total, isTop, ctx = {}) {
       <div class="stat"><small>VERSION</small><b>${vers}</b></div>
     </div>
     <div class="stub">${f.s.map(x => {
-      const label = x.h + (x.v !== 'VF' ? ' ' + x.v : '') + (x.ap ? ' AVP' : ''); const b = safeUrl(x.book);
-      return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${x.h}">${label}</a>` : `<span class="chip">${label}</span>`;
+      const b = safeUrl(x.book);
+      return b ? `<a class="chip" href="${b}" target="_blank" rel="noopener" aria-label="Réserver la séance de ${x.h}">${lab(x)}</a>` : `<span class="chip">${lab(x)}</span>`;
     }).join('')}
       <a class="allo" href="${allo}" target="_blank" rel="noopener">AlloCiné ›</a></div>
     <div class="stamp keep">JE GARDE</div><div class="stamp nope">NON MERCI</div><div class="stamp coeur">COUP DE CŒUR</div>
   </article>`;
-}
-function renderDeck() {
-  const D = DATA[S.cin];
-  if (D && D.status !== 'ok') {
-    const box = D.status === 'loading'
-      ? `<div class="empty"><h2>Chargement…</h2><p>Récupération des séances de ${esc(cin().name)}.</p></div>`
-      : `<div class="empty"><h2>Oups</h2><p>Impossible de récupérer les séances pour le moment.</p><button class="big cream" data-act="retry">Réessayer</button></div>`;
-    $app.innerHTML = topBar(0) + `<div class="stage">${box}</div>` + sheetHTML();
-    return;
-  }
-  const all = filmsFor(); const L = getList();
-  const deck = all.filter(f => !L.kept.includes(f.id) && !L.removed.includes(f.id));
-  const keptN = L.kept.filter(id => all.some(f => f.id === id)).length;
-  let stage;
-  if (!all.length) {
-    stage = `<div class="empty"><h2>Plus de séance</h2><p>Aucune séance ${hourText()} pour ${S.day === 0 ? "aujourd'hui" : dayLong(S.day)} dans ce cinéma.</p>
-      ${S.day < LIMIT ? `<button class="big cream" data-act="nextday">Voir ${S.day === 0 ? 'demain' : 'le jour suivant'}</button>` : ''}
-      ${S.hour !== 0 ? `<button class="ghost" data-act="allday">Toute la journée</button>` : ''}</div>`;
-  } else if (!deck.length) {
-    stage = `<div class="empty"><h2>Tous vus !</h2><p>Tu as passé les ${all.length} films. ${keptN ? `Tu en as gardé ${keptN}.` : "Tu n'en as gardé aucun."}</p>
-      ${keptN ? `<button class="big or" data-act="go" data-v="sel">Voir ma sélection</button>` : ''}
-      <button class="ghost" data-act="reset">Tout recommencer</button></div>`;
-  } else {
-    const top = deck[0], next = deck[1];
-    const num = all.length - deck.length + 1;
-    stage = (next ? cardHTML(next, num + 1, all.length, false) : '') + cardHTML(top, num, all.length, true);
-  }
-  $app.innerHTML = topBar(keptN) + `<div class="stage${deck.length ? ' cards' : ''}">${stage}</div>` +
-    (deck.length ? underBar(L.hist.length > 0, 'undo', 'finish', keptN ? 'J’ai fini, voir ma sélection' : 'J’ai fini') : '') +
-    (all.length ? `<button class="gbtn" data-act="sheet" data-v="group">${ICON.group} Choisir entre potes</button>` : '') + CREDIT + sheetHTML();
-  const el = document.querySelector('.card.front');
-  if (el) attachSwipe(el, {
-    up: true, onDecide: decide,
-    onTap: id => { const f = filmsFor().find(x => x.id === id); if (f && f.yt) { S.playing = f.id; render(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
-  });
-  armNudge();
 }
 /* Sous la carte : pas de gros boutons (on glisse), juste « Annuler » et « J'ai fini ».
    Les boutons de choix restent présents mais invisibles, pour les lecteurs d'écran. */
@@ -515,6 +568,56 @@ function flyOut(dir, cb) {
   const st = el.querySelector('.stamp.' + dir); if (st) st.style.opacity = 1;
   setTimeout(() => cb(id), 280);
 }
+
+/* =====================================================================
+   SANS SÉANCE (organisateur, avant d'inviter)
+   ===================================================================== */
+function keptFilms() { const L = getList(); const all = filmsFor(); return L.kept.map(id => all.find(f => f.id === id)).filter(Boolean); }
+function renderHome() {
+  const D = DATA[S.cin], ok = D && D.status === 'ok';
+  const all = ok ? filmsFor() : [], L = getList();
+  const deck = all.filter(f => !L.kept.includes(f.id) && !L.removed.includes(f.id));
+  const kept = keptFilms();
+  const nav = navHTML(S.tab, { okFilms: ok && all.length > 0 && !deck.length, cnt: kept.length, lockRes: true });
+  if (S.tab === 'sel') {
+    const removed = L.removed.map(id => all.find(f => f.id === id)).filter(Boolean);
+    $app.innerHTML = BRAND + stepKick(2, 'Je valide et j’invite mes potes') +
+      `<div class="pagehead2"><h1>Ma sélection</h1><p>${kept.length} film${kept.length > 1 ? 's' : ''} · ${esc(cin().short)} · ${esc(dayText(S.day))} · ${esc(hourText())}</p></div>` +
+      resumeHTML() +
+      (kept.length ? selGrid(kept, L.coeur, 'unkeep')
+        : `<div class="empty"><p>Tu n’as encore gardé aucun film.</p><button class="big cream" data-act="tab" data-v="films">Choisir mes films</button></div>`) +
+      removedHTML(removed, 'rekeep', S.showRemoved) +
+      `<div class="ctabar">${FIREBASE_CONFIG
+        ? `<button class="big or" data-act="valid">${ICON.group} Valider et inviter mes potes</button>
+           ${kept.length ? '<button class="linkbtn" data-act="sheet" data-v="share">ou juste envoyer ma sélection sur WhatsApp</button>' : ''}`
+        : kept.length ? `<button class="big or" data-act="sheet" data-v="share">${ICON.send} Envoyer ma sélection sur WhatsApp</button>` : ''}</div>` +
+      CREDIT + nav + sheetHTML();
+    return;
+  }
+  let stage;
+  if (!D || D.status === 'loading') stage = `<div class="empty"><h2>Chargement…</h2><p>Récupération des séances de ${esc(cin().name)}.</p></div>`;
+  else if (D.status !== 'ok') stage = `<div class="empty"><h2>Oups</h2><p>Impossible de récupérer les séances pour le moment.</p><button class="big cream" data-act="retry">Réessayer</button></div>`;
+  else if (!all.length) stage = `<div class="empty"><h2>Plus de séance</h2><p>Aucune séance ${hourText()} pour ${S.day === 0 ? "aujourd'hui" : dayLong(S.day)} dans ce cinéma.</p>
+      ${S.day < LIMIT ? `<button class="big cream" data-act="nextday">Voir ${S.day === 0 ? 'demain' : 'le jour suivant'}</button>` : ''}
+      ${S.hour !== 0 ? `<button class="ghost" data-act="allday">Toute la journée</button>` : ''}</div>`;
+  else if (!deck.length) stage = `<div class="empty"><h2>Tous vus !</h2><p>Tu as passé les ${all.length} films${kept.length ? ` et tu en as gardé ${kept.length}` : ''}.</p>
+      <button class="big or" data-act="tab" data-v="sel">Valider ma sélection ›</button><button class="ghost" data-act="reset">Tout recommencer</button></div>`;
+  else {
+    const num = all.length - deck.length + 1, top = deck[0], next = deck[1];
+    stage = (next ? cardHTML(next, num + 1, all.length, false) : '') + cardHTML(top, num, all.length, true);
+  }
+  $app.innerHTML = BRAND + stepKick(1, 'Je choisis mes films') + setLine() + resumeHTML() +
+    `<div class="stage${deck.length ? ' cards' : ''}">${stage}</div>` +
+    (deck.length ? underBar(L.hist.length > 0, 'undo', 'finish', 'J’ai fini') : '') + CREDIT + nav + sheetHTML();
+  const el = document.querySelector('.card.front');
+  if (el) {
+    attachSwipe(el, {
+      up: true, onDecide: decide,
+      onTap: id => { const f = filmsFor().find(x => x.id === id); if (f && f.yt) { S.playing = f.id; render(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
+    });
+    armNudge();
+  }
+}
 function decide(dir) {
   flyOut(dir, id => {
     const L = getList(); _swipes++;
@@ -525,11 +628,8 @@ function decide(dir) {
       L.coeur = id;
     }
     saveList(L); S.playing = null;
-    // Dernière carte passée : on affiche directement la sélection (s'il y a au moins un film gardé)
-    const all = filmsFor();
-    const left = all.filter(f => !L.kept.includes(f.id) && !L.removed.includes(f.id)).length;
-    const kept = L.kept.filter(k => all.some(f => f.id === k)).length;
-    if (!left && kept) S.view = 'sel';
+    const left = filmsFor().filter(f => !L.kept.includes(f.id) && !L.removed.includes(f.id)).length;
+    if (!left) { S.tab = 'sel'; window.scrollTo(0, 0); }
     render();
   });
 }
@@ -540,67 +640,27 @@ function undo() {
   saveList(L); S.playing = null; render();
 }
 
-/* ---------- Écran : ma sélection ---------- */
-function keptFilms() { const L = getList(); const all = filmsFor(); return L.kept.map(id => all.find(f => f.id === id)).filter(Boolean); }
-function renderSel() {
-  const films = keptFilms(); const L = getList(); const all = filmsFor();
-  const removed = L.removed.map(id => all.find(f => f.id === id)).filter(Boolean);
-  $app.innerHTML = `<div class="pagehead">
-      <button class="iconbtn" data-act="go" data-v="deck" aria-label="Retour aux cartes">${ICON.back}</button>
-      <div><h1>Ma sélection</h1><p>${films.length} film${films.length > 1 ? 's' : ''} · ${esc(cin().short)} · ${dayLong(S.day)} · ${hourText()}</p></div></div>
-    ${films.length ? `<div class="grid">${films.map(f => `<div class="mini">
-        <button class="rm" data-act="unkeep" data-v="${esc(f.id)}" aria-label="Retirer ${esc(f.t)}">${ICON.xs}</button>
-        ${f.yt ? `<button class="thumb" data-act="video" data-v="${esc(f.yt)}" aria-label="Bande-annonce de ${esc(f.t)}"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><span>${ICON.play}</span></button>` : `<div class="thumb"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"></div>`}
-        <div class="t">${esc(f.t)}</div><div class="d">${fmtDur(f.d)}${f.id === L.coeur ? ` <span class="mheart">${ICON.hs} coup de cœur</span>` : ''}</div><div class="s">${seaTxt(f)}</div></div>`).join('')}</div>`
-      : `<div class="empty"><h2>Rien pour l'instant</h2><p>Glisse des cartes vers la droite pour les garder.</p><button class="big cream" data-act="go" data-v="deck">Voir les cartes</button></div>`}
-    <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
-      ${films.length ? `<button class="big or" data-act="sheet" data-v="group">${ICON.group} Choisir entre potes</button>
-        <button class="big cream" data-act="sheet" data-v="share">${ICON.send} Envoyer juste ma sélection</button>` : ''}
-      ${lastGroupLink('ghost')}
-      ${removed.length ? `<button class="ghost" data-act="toggleRemoved">${S.showRemoved ? 'Masquer' : 'Revoir'} les films éliminés (${removed.length})</button>` : ''}
-    </div>
-    ${S.showRemoved && removed.length ? `<div class="list">${removed.map(f => `<div class="row"><img src="${anyImg(f)}" alt="" onerror="this.style.visibility='hidden'"><div class="grow">${esc(f.t)} · ${fmtDur(f.d)}</div><button class="smallbtn" data-act="rekeep" data-v="${esc(f.id)}">Garder</button></div>`).join('')}</div>` : ''}
-    ${sheetHTML()}`;
-}
-
-/* ---------- Feuilles (choix et partage) ---------- */
+/* ---------- Feuilles (réglages, partage, validation) ---------- */
 function sheetHTML() {
   if (!S.sheet) return '';
   let body = '';
-  if (S.sheet === 'cin') {
-    body = `<h2>Choisir le cinéma</h2>` + CINEMAS.map(c => `<button class="opt ${c.id === S.cin ? 'on' : ''}" data-act="setcin" data-v="${c.id}">${esc(c.name)}</button>`).join('');
-  } else if (S.sheet === 'day') {
-    body = `<h2>Choisir le jour</h2><p class="note">Les cinémas publient le programme de la semaine suivante le mardi. Les nouveaux films sortent le mercredi.</p>` +
-      DAYS.map((d, i) => `<button class="opt ${i === S.day ? 'on' : ''}" data-act="setday" data-v="${i}" ${dayOpen(i) ? '' : 'disabled'}>
-        <span>${dayShort(i) === "Aujourd'hui" || dayShort(i) === 'Demain' ? dayShort(i) + ' · ' + dayLong(i) : dayLong(i).replace(/^./, c => c.toUpperCase())}</span>
-        <small>${!dayOpen(i) ? 'Programme publié mardi' : d.getDay() === 3 ? 'Sorties de la semaine' : d.getDay() === 2 ? 'Programme mis à jour' : ''}</small></button>`).join('');
-  } else if (S.sheet === 'hour') {
-    body = `<h2>Séances à partir de</h2>` + HOURS.filter(h => !(h.v === -1 && S.day !== 0)).map(h => `<button class="opt ${h.v === S.hour ? 'on' : ''}" data-act="sethour" data-v="${h.v}">${h.l}</button>`).join('');
+  if (S.sheet === 'set') {
+    body = `<h2>Où et quand ?</h2>
+      <div class="lbl">CINÉMA</div>${CINEMAS.map(c => `<button class="opt ${c.id === S.cin ? 'on' : ''}" data-act="setcin" data-v="${c.id}">${esc(c.name)}</button>`).join('')}
+      <div class="lbl">JOUR</div><div class="chips2">${DAYS.map((d, i) => `<button class="dchip${i === S.day ? ' on' : ''}" data-act="setday" data-v="${i}" ${dayOpen(i) ? '' : 'disabled'}>${dayShort(i)}</button>`).join('')}</div>
+      <p class="note" style="margin-top:8px">Les cinémas publient le programme de la semaine suivante le mardi.</p>
+      <div class="lbl">SÉANCES À PARTIR DE</div><div class="chips2">${HOURS.filter(h => !(h.v === -1 && S.day !== 0)).map(h => `<button class="dchip${h.v === S.hour ? ' on' : ''}" data-act="sethour" data-v="${h.v}">${h.l}</button>`).join('')}</div>
+      <button class="big ink" data-act="close" style="margin-top:16px">Voir les films</button>`;
   } else if (S.sheet === 'share') {
     body = `<h2>Envoyer à mes amis</h2>
       <label class="field">Ton prénom<input id="f-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(S.prenom)}" placeholder="Ex. : Seb"></label>
-      <label class="field">Un petit mot (facultatif)<input id="f-mot" type="text" maxlength="120" value="${esc(S.mot)}" placeholder="Ex. : on vote ce soir !"></label>
+      <label class="field">Un petit mot (facultatif)<input id="f-mot" type="text" maxlength="120" value="${esc(S.mot)}" placeholder="Ex. : on va au ciné ce soir ?"></label>
       <div class="lbl">APERÇU DU MESSAGE</div>
       <div class="preview" id="f-preview">${esc(buildMsg(payload(), '[lien]'))}</div>
-      <p class="note" style="margin-top:10px">Tes potes verront ta sélection et les bandes-annonces. Pour choisir le film tous ensemble, utilise plutôt « Choisir entre potes ».</p>
+      <p class="note" style="margin-top:10px">Tes potes verront ta sélection et les bandes-annonces, sans pouvoir choisir. Pour choisir le film tous ensemble, utilise plutôt « Valider et inviter mes potes ».</p>
       <button class="big ink" id="f-send" data-act="share">${ICON.send} Ouvrir WhatsApp</button>`;
-  } else if (S.sheet === 'group') {
-    const n = filmsOfDay().length, L = getList(), mine = L.kept.length + L.removed.length;
-    body = `<h2>Choisir entre potes</h2>
-      <p class="note">Chacun choisit ses films de son côté, sur son téléphone, sans créer de compte. Pot’corn trouve le film qui met tout le monde d’accord.</p>
-      <div class="recap"><b>${esc(cin().name)}</b><br>${esc(dayLong(S.day).replace(/^./, c => c.toUpperCase()))} · ${n} film${n > 1 ? 's' : ''} à l’affiche</div>
-      <label class="field">Ton prénom<input id="f-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(S.prenom)}" placeholder="Ex. : Seb"></label>
-      <ol class="how">
-        <li>Tu invites tes potes sur WhatsApp.</li>
-        <li>Chacun choisit à partir de quelle heure il est dispo, puis garde ou élimine les films, comme toi. Sur chaque carte, il voit qui l’a déjà gardé.</li>
-        <li>Un coup de cœur par personne (glisser vers le haut) : il compte double.</li>
-        <li>Pot’corn montre les films en commun et les séances qui vont à tout le monde. En cas d’égalité, la roulette tranche, et toi tu valides le choix final.</li>
-      </ol>
-      ${mine ? `<p class="note">Tes choix déjà faits (${esc(hourText())}) sont repris : tu n’as pas à recommencer.</p>` : ''}
-      ${!FIREBASE_CONFIG ? `<p class="note"><b>Bientôt disponible :</b> ce mode s’activera dès que Firebase sera branché sur le site.</p>`
-        : !n ? `<p class="note">Aucune séance à proposer ce jour-là.</p>`
-        : `<button class="big ink" data-act="gcreate">${ICON.group} Créer la séance</button>`}
-      ${lastGroupLink('linkbtn')}`;
+  } else if (S.sheet === 'valid') {
+    body = validSheetBody(false);
   }
   return `<div class="sheetbg" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true"><span class="grip"></span>${body}</div>`;
 }
@@ -625,7 +685,7 @@ function share() {
   location.href = 'https://wa.me/?text=' + encodeURIComponent(buildMsg(p, base() + '?s=' + b64enc(p)));
 }
 
-/* ---------- Vidéo plein écran (sélection et vote) ---------- */
+/* ---------- Vidéo plein écran (sélection et résultats) ---------- */
 function showVideo(yt) {
   const o = document.createElement('div'); o.className = 'vid';
   o.innerHTML = `<iframe src="${embed(yt)}" title="Bande-annonce" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe><button class="vclose" data-act="closevideo">Fermer</button>`;
@@ -676,7 +736,8 @@ function thumbBtn(f) {
    SÉANCE ENTRE POTES
    Firestore :
    seances/{code}            → la séance (cinéma, jour, films, décision, roulette)
-   seances/{code}/potes/{uid} → les choix de chaque pote (prénom, dispo, films gardés, coup de cœur)
+   seances/{code}/potes/{uid} → les choix validés de chaque pote (prénom, dispo, films gardés, coup de cœur)
+   Avant de valider, les choix d'un invité restent sur son téléphone.
    Chaque téléphone a un identifiant anonyme Firebase : pas de compte à créer.
    ===================================================================== */
 const G = { on: false };
@@ -687,18 +748,15 @@ const isCreator = () => !!(G.doc && G.doc.creator === G.uid);
 const gToday = () => G.doc.jourISO === iso(new Date());
 const ended = () => G.doc && G.doc.jourISO < iso(new Date());
 const groupLink = () => base() + '?g=' + G.code;
+const gKey = () => 'cine:g:' + G.code;
 const filmById = id => G.doc.films.find(f => f.id === id);
 /* Séances d'un film à partir d'une heure (et pas déjà passées si c'est aujourd'hui) */
 const seasFrom = (f, m) => f.s.filter(x => toMin(x.h) >= Math.max(m || 0, gToday() ? nowMin() : 0));
-/* Films qu'un pote doit départager selon l'heure où il est dispo */
+/* Films à départager selon l'heure où on est dispo */
 const deckFor = dispo => G.doc.films.map(f => ({ ...f, s: seasFrom(f, dispo) })).filter(f => f.s.length);
+const myDispo = () => G.joined ? (G.me.dispo || 0) : 0;
 const initial = s => esc(([...String(s || '?').trim()][0] || '?').toUpperCase());
 
-function lastGroupLink(cls) {
-  const lg = store.get('cine:lastGroup', null);
-  if (!lg || !lg.code || lg.jour < iso(new Date())) return '';
-  return `<a class="${cls}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:${cls === 'ghost' ? '#fff' : ''}" href="${base()}?g=${esc(lg.code)}">Reprendre ma séance entre potes</a>`;
-}
 function packFilm(f) {
   return {
     id: String(f.id), t: f.t, d: f.d || 0, g: f.g || '', yt: f.yt || null,
@@ -707,14 +765,14 @@ function packFilm(f) {
   };
 }
 
-/* ----- Création (depuis la page des séances) ----- */
+/* ----- Création : l'organisateur valide ses choix ----- */
 async function createGroup(btn) {
-  const prenom = S.prenom.trim();
-  if (!prenom) { toast('Écris ton prénom'); document.getElementById('f-prenom')?.focus(); return; }
+  const prenom = String(VAL.prenom || '').trim();
+  if (!prenom) { toast('Écris ton prénom'); document.getElementById('v-prenom')?.focus(); return; }
   const list = filmsOfDay().slice(0, 80);   // tous les films du jour : chacun choisit à son heure
   if (!list.length) { toast('Aucune séance à proposer ce jour-là'); return; }
-  store.set('cine:prenom', prenom);
-  btn.disabled = true; btn.textContent = 'Création…';
+  S.prenom = prenom; store.set('cine:prenom', prenom);
+  btn.disabled = true; btn.textContent = 'Création de la séance…';
   try {
     const fb = await getFB();
     let code = makeCode();
@@ -729,27 +787,25 @@ async function createGroup(btn) {
       creator: fb.uid, auteur: prenom, films: list.map(packFilm),
       createdAt: fb.fs.serverTimestamp(), expireAt: fb.fs.Timestamp.fromDate(exp), decision: null, roulette: null
     });
-    // Mes choix déjà faits sur les cartes sont repris (mon heure = celle choisie en haut de l'écran)
-    const L = getList(), ids = new Set(list.map(f => f.id)), dispo = hourMin();
+    // Mes choix déjà faits sur les cartes sont repris
+    const L = getList(), ids = new Set(list.map(f => f.id));
     const kept = L.kept.filter(id => ids.has(id)), removed = L.removed.filter(id => ids.has(id));
-    const min = Math.max(dispo, S.day === 0 ? nowMin() : 0);
-    const todo = list.filter(f => f.s.some(x => toMin(x.h) >= min) && !kept.includes(f.id) && !removed.includes(f.id)).length;
     await fb.fs.setDoc(fb.fs.doc(fb.db, 'seances', code, 'potes', fb.uid), {
-      prenom, dispo, kept, removed, coeur: L.coeur && kept.includes(L.coeur) ? L.coeur : null, done: !todo, at: fb.fs.serverTimestamp()
+      prenom, dispo: VAL.dispo, kept, removed, coeur: L.coeur && kept.includes(L.coeur) ? L.coeur : null, done: true, at: fb.fs.serverTimestamp()
     });
     S.sheet = null;
     history.pushState(null, '', base() + '?g=' + code);
-    await initGroup(code);
-    toast('Séance créée ! Invite tes potes avec le bouton « Inviter »');
+    await initGroup(code, 'sel');
+    window.scrollTo(0, 0);
   } catch (e) {
-    console.error(e); toast('Impossible de créer la séance. Vérifie la configuration Firebase.');
-    btn.disabled = false; btn.innerHTML = ICON.group + ' Créer la séance';
+    console.error(e); toast('Impossible de créer la séance. Vérifie ta connexion.');
+    btn.disabled = false; btn.textContent = 'Valider';
   }
 }
 
 /* ----- Ouverture d'une séance (lien ?g=CODE) ----- */
-async function initGroup(code) {
-  Object.assign(G, { on: true, code, step: 'load', doc: null, potes: {}, me: null, sheet: null, playing: null, error: null, hist: [], rouN: 0, jdispo: null });
+async function initGroup(code, tab) {
+  Object.assign(G, { on: true, code, step: 'load', tab: 'films', doc: null, potes: {}, me: null, joined: false, sheet: null, playing: null, error: null, hist: [], rouN: 0, showRemoved: false });
   renderGroup();
   try {
     const fb = await getFB(); if (!fb) throw new Error('nofb');
@@ -759,13 +815,23 @@ async function initGroup(code) {
     if (!snap.exists()) { G.error = 'Cette séance est introuvable. Vérifie le lien reçu.'; G.step = 'err'; return renderGroup(); }
     G.doc = snap.data();
     const mine = await fb.fs.getDoc(fb.fs.doc(fb.db, 'seances', code, 'potes', fb.uid));
-    if (mine.exists()) G.me = mine.data();
+    if (mine.exists()) { G.me = mine.data(); G.joined = true; }
+    else {
+      const loc = store.get(gKey(), null) || {};
+      G.me = { prenom: S.prenom, dispo: 0, kept: loc.kept || [], removed: loc.removed || [], coeur: loc.coeur || null, done: false };
+    }
     G.rouN = G.doc.roulette ? G.doc.roulette.n : 0;
-    G.step = G.me ? (G.me.done || ended() ? 'res' : 'swipe') : (ended() ? 'res' : 'join');
+    G.step = 'ok';
+    G.tab = tab || (G.joined || ended() ? 'res' : 'films');
     store.set('cine:lastGroup', { code, jour: G.doc.jourISO });
     fb.fs.onSnapshot(ref, s => { if (s.exists()) { G.doc = s.data(); onGroupChange(); } });
-    fb.fs.onSnapshot(fb.fs.collection(fb.db, 'seances', code, 'potes'), s => {
-      G.potes = {}; s.docs.forEach(d => { G.potes[d.id] = d.data(); }); onGroupChange();
+    // On attend les choix des autres avant d'afficher les cartes (ordre et bandeau « gardé par »)
+    await new Promise(done => {
+      let first = true; const t = setTimeout(done, 3000);
+      fb.fs.onSnapshot(fb.fs.collection(fb.db, 'seances', code, 'potes'), s => {
+        G.potes = {}; s.docs.forEach(d => { G.potes[d.id] = d.data(); });
+        if (first) { first = false; clearTimeout(t); done(); } else onGroupChange();
+      }, () => done());
     });
   } catch (e) {
     console.error(e);
@@ -774,41 +840,71 @@ async function initGroup(code) {
   }
   renderGroup();
 }
-/* Mes choix sont gardés en local (plus à jour que la base pendant que je glisse) */
+/* Les potes qui ont validé (moi compris si j'ai validé ; mes choix locaux sont les plus à jour) */
 function potesList() {
-  const P = { ...G.potes }; if (G.me) P[G.uid] = G.me;
+  const P = { ...G.potes }; delete P[G.uid];
+  if (G.me && G.joined) P[G.uid] = G.me;
   return Object.entries(P).map(([uid, p]) => ({ uid, ...p }))
     .sort((a, b) => (b.uid === G.doc.creator) - (a.uid === G.doc.creator) || String(a.prenom).localeCompare(String(b.prenom), 'fr'));
 }
 function onGroupChange() {
-  if (!G.doc || G.step === 'load' || G.step === 'err') return;
+  if (!G.doc || G.step !== 'ok') return;
   const r = G.doc.roulette;
   if (r && r.n !== G.rouN) { G.rouN = r.n; playRoulette(r); }
-  const h = document.getElementById('ghead'); if (h) h.innerHTML = gHeadHTML();
   const d = document.getElementById('gdec'); if (d) d.innerHTML = gDecHTML();
-  const jx = document.getElementById('gjoinx'); if (jx) jx.innerHTML = gJoinOthersHTML();
-  if (G.step === 'res' && !G.sheet && !document.querySelector('.vid')) {
+  if (G.tab === 'res' && !G.sheet && !document.querySelector('.vid')) {
     const b = document.getElementById('gbody'); if (b) b.innerHTML = gResHTML();
   }
 }
 async function saveMe() {
   const fb = await getFB();
   await fb.fs.setDoc(fb.fs.doc(fb.db, 'seances', G.code, 'potes', fb.uid), {
-    prenom: G.me.prenom, dispo: G.me.dispo, kept: G.me.kept, removed: G.me.removed,
-    coeur: G.me.coeur || null, done: !!G.me.done, at: fb.fs.serverTimestamp()
+    prenom: G.me.prenom, dispo: G.me.dispo || 0, kept: G.me.kept, removed: G.me.removed,
+    coeur: G.me.coeur || null, done: true, at: fb.fs.serverTimestamp()
   });
 }
-const saveSoon = () => saveMe().catch(e => { console.error(e); toast('Connexion perdue : ton choix sera renvoyé au prochain film'); });
+/* Avant validation : sur le téléphone ; après : envoyé aux potes */
+function saveMine() {
+  if (G.joined) return saveMe().catch(e => { console.error(e); toast('Connexion perdue : ton choix sera renvoyé au prochain film'); });
+  store.set(gKey(), { kept: G.me.kept, removed: G.me.removed, coeur: G.me.coeur });
+}
+async function gValidate(btn) {
+  const prenom = String(VAL.prenom || '').trim();
+  if (!prenom) { toast('Écris ton prénom'); document.getElementById('v-prenom')?.focus(); return; }
+  S.prenom = prenom; store.set('cine:prenom', prenom);
+  const before = { ...G.me };
+  Object.assign(G.me, { prenom, dispo: VAL.dispo || 0, done: true });
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try { await saveMe(); }
+  catch (e) { console.error(e); G.me = before; toast('Tes choix n’ont pas pu être envoyés. Réessaie.'); btn.disabled = false; btn.textContent = 'Valider et voir les résultats'; return; }
+  G.joined = true; G.sheet = null; G.tab = 'res'; store.set(gKey(), null);
+  renderGroup(); window.scrollTo(0, 0);
+  toast('Choix validés ! Voici les résultats');
+}
 
 /* ----- Affichage ----- */
+function gDeck() {
+  const M = G.me, seen = new Set([...M.kept, ...M.removed]);
+  const others = potesList().filter(p => p.uid !== G.uid);
+  const score = f => others.reduce((s, p) => s + ((p.kept || []).includes(f.id) ? 1 : 0) + (p.coeur === f.id ? 1 : 0), 0);
+  const all = deckFor(myDispo());
+  // Les films déjà gardés par les autres d'abord (les plus demandés en tête)
+  const rest = all.filter(f => !seen.has(f.id)).map((f, i) => ({ f, i, s: score(f) }))
+    .sort((a, b) => b.s - a.s || a.i - b.i).map(x => x.f);
+  return { all, rest };
+}
 function renderGroup() {
   if (G.step === 'load') { $app.innerHTML = BRAND + `<div class="empty"><h2>Chargement…</h2><p>On récupère la séance entre potes.</p></div>`; return; }
   if (G.step === 'err') { $app.innerHTML = BRAND + `<div class="empty"><h2>Oups</h2><p>${esc(G.error)}</p><a class="big or" href="${base()}">Voir les séances</a></div>`; return; }
-  const body = G.step === 'join' ? gJoinHTML() : G.step === 'swipe' ? gSwipeHTML() : gResHTML();
-  $app.innerHTML = BRAND + `<div id="ghead" class="ghead">${gHeadHTML()}</div><div id="gdec">${gDecHTML()}</div>
-    <div id="gbody" class="gbody">${body}</div>` + CREDIT + gSheetHTML();
+  const { all, rest } = gDeck(), tab = G.tab;
+  const nav = navHTML(tab, { okFilms: G.joined || (all.length > 0 && !rest.length), okSel: G.joined, cnt: G.me.kept.length, lockRes: !G.joined && !ended() });
+  const kick = tab === 'films' ? stepKick(1, 'Je choisis mes films')
+    : tab === 'sel' ? stepKick(2, isCreator() ? 'J’invite mes potes' : G.joined ? 'Mes choix sont validés' : 'Je valide mes choix')
+    : stepKick(3, 'Les résultats');
+  const body = tab === 'films' ? gFilmsHTML(all, rest) : tab === 'sel' ? gSelHTML(rest.length) : gResHTML();
+  $app.innerHTML = BRAND + kick + gLine() + `<div id="gdec">${gDecHTML()}</div><div id="gbody" class="gbody">${body}</div>` + CREDIT + nav + gSheetHTML();
   const el = document.querySelector('.card.front');
-  if (G.step === 'swipe' && el) {
+  if (tab === 'films' && el) {
     attachSwipe(el, {
       up: true, onDecide: gDecide,
       onTap: id => { const f = filmById(id); if (f && f.yt) { G.playing = id; renderGroup(); } else toast('Pas de bande-annonce trouvée pour ce film'); }
@@ -816,23 +912,88 @@ function renderGroup() {
     armNudge();
   }
 }
-function potePill(p, i) {
-  const ids = new Set(deckFor(p.dispo).map(f => f.id));
-  const n = [...(p.kept || []), ...(p.removed || [])].filter(id => ids.has(id)).length;
-  return `<span class="pote ${p.done ? 'done' : ''}"><span class="av" style="background:${AVC[i % AVC.length]}">${initial(p.prenom)}</span>${esc(p.prenom)}${p.uid === G.uid ? ' (toi)' : ''}
-    <small>${p.done ? 'a fini' : `${n}/${ids.size}`}</small></span>`;
+function gLine() {
+  const D = G.doc;
+  return `<div class="gline">${ICON.group}<span>${isCreator() ? 'Ta séance' : `Séance de <b>${esc(D.auteur)}</b>`} · ${esc(D.cinema.short)} · ${esc(D.jour)}</span></div>`;
 }
-function gHeadHTML() {
-  const D = G.doc, P = potesList();
-  return `<div class="gt"><div><span class="kick">SÉANCE ENTRE POTES</span><h1>${esc(D.cinema.short)} · ${esc(D.jour)}</h1>
-      <p>${D.films.length} film${D.films.length > 1 ? 's' : ''} à l’affiche · lancée par ${esc(D.auteur)}</p></div>
-      ${ended() ? '' : `<a class="invite" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter</a>`}</div>
-    <div class="potes">${P.length ? P.map(potePill).join('') : '<span class="msg" style="font-size:12px">Personne n’a encore rejoint la séance.</span>'}</div>`;
+function othersHTML(f) {
+  const fans = potesList().filter(p => p.uid !== G.uid && (p.kept || []).includes(f.id));
+  if (!fans.length) return '';
+  const c = fans.filter(p => p.coeur === f.id).map(p => esc(p.prenom));
+  return `<div class="others">${ICON.oks} Gardé par ${fans.map(p => esc(p.prenom)).join(', ')}${c.length ? ` · ${ICON.hs} coup de cœur de ${c.join(', ')}` : ''}</div>`;
+}
+/* Étape 1 : les cartes */
+function gFilmsHTML(all, rest) {
+  const M = G.me, D = G.doc;
+  let h = '';
+  if (!G.joined && !isCreator() && !M.kept.length && !M.removed.length) {
+    h += `<div class="tip"><b>${esc(D.auteur)} t’invite à choisir le film !</b> Garde les films qui te tentent, élimine les autres. Sur chaque carte, tu vois qui l’a déjà gardé. Quand tu as fini, valide tes choix pour voir les résultats.</div>`;
+  }
+  if (!rest.length) {
+    return h + `<div class="empty"><h2>Tous vus !</h2><p>Tu as passé les ${all.length} films et tu en as gardé ${M.kept.length}.</p>
+      <button class="big or" data-act="tab" data-v="${G.joined ? 'res' : 'sel'}">${G.joined ? 'Voir les résultats ›' : 'Valider mes choix ›'}</button>
+      <button class="ghost" data-act="greset">Recommencer mes choix</button></div>`;
+  }
+  const ctx = { group: true, playing: G.playing, date: new Date(D.jourISO + 'T00:00:00'), others: othersHTML };
+  const num = all.length - rest.length + 1, top = rest[0], next = rest[1];
+  return h + `<div class="stage cards">${next ? cardHTML(next, num + 1, all.length, false, ctx) : ''}${cardHTML(top, num, all.length, true, ctx)}</div>
+    ${underBar(G.hist.length > 0, 'gundo', 'gfinish', 'J’ai fini')}`;
+}
+function gDecide(dir) {
+  flyOut(dir, id => {
+    const M = G.me, prev = M.coeur || null; _swipes++;
+    M.kept = M.kept.filter(x => x !== id); M.removed = M.removed.filter(x => x !== id);
+    (dir === 'nope' ? M.removed : M.kept).push(id);
+    if (dir === 'coeur') {
+      if (prev && prev !== id) toast(`Ton coup de cœur passe de « ${(filmById(prev) || {}).t || '?'} » à celui-ci`);
+      M.coeur = id;
+    }
+    G.hist.push({ id, prev }); G.playing = null;
+    saveMine();
+    if (!gDeck().rest.length) { G.tab = G.joined ? 'res' : 'sel'; window.scrollTo(0, 0); }
+    renderGroup();
+  });
+}
+function gUndo() {
+  const h = G.hist.pop(); if (!h) return;
+  const M = G.me;
+  M.kept = M.kept.filter(x => x !== h.id); M.removed = M.removed.filter(x => x !== h.id);
+  M.coeur = h.prev; G.playing = null; G.tab = 'films';
+  saveMine(); renderGroup();
+}
+/* Étape 2 : ma sélection (valider / inviter) */
+function inviteCard() {
+  return `<div class="invcard"><h2>Ta séance est prête !</h2>
+    <p>Envoie le lien à tes potes : chacun choisit ses films de son côté, sans compte. Les résultats se mettent à jour à chaque réponse.</p>
+    <a class="big or" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter mes potes sur WhatsApp</a>
+    <button class="linkbtn" data-act="copylink">Copier le lien</button></div>`;
+}
+function gSelHTML(left) {
+  const M = G.me, dispo = myDispo();
+  const films = M.kept.map(filmById).filter(Boolean).map(f => ({ ...f, s: seasFrom(f, dispo) }));
+  const removed = M.removed.map(filmById).filter(Boolean);
+  let h = '';
+  if (G.joined && isCreator() && !ended()) h += inviteCard();
+  else if (G.joined) h += `<div class="okcard">${ICON.oks}<span>Tes choix sont validés : tes potes les voient dans les résultats.</span></div>`;
+  h += `<div class="pagehead2"><h1>Ma sélection</h1><p>${films.length} film${films.length > 1 ? 's' : ''}${G.joined ? ' · dispo ' + esc(fromText(M.dispo)) : ''}</p></div>`;
+  h += films.length ? selGrid(films, M.coeur, 'gunkeep')
+    : `<p class="msg">Tu n’as gardé aucun film${G.joined ? '.' : ' pour l’instant. Tu peux quand même valider : tes potes sauront que rien ne te tente.'}</p>`;
+  h += removedHTML(removed, 'grekeep', G.showRemoved);
+  if (ended()) return h;
+  if (!G.joined) {
+    h += `<div class="ctabar"><button class="big or" data-act="valid">Valider mes choix</button>
+      ${left ? `<button class="linkbtn" data-act="tab" data-v="films">Continuer à choisir (${left} film${left > 1 ? 's' : ''} restant${left > 1 ? 's' : ''})</button>` : ''}</div>`;
+  } else {
+    h += `<div class="ctabar"><button class="big cream" data-act="tab" data-v="res">Voir les résultats ›</button>
+      <button class="linkbtn" data-act="tab" data-v="films">Modifier mes choix</button></div>`;
+    if (!isCreator()) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
+  }
+  return h;
 }
 function inviteHref() {
   const D = G.doc, n = D.films.length;
   const txt = `Séance ciné entre potes ! 🍿\n\n${D.auteur} t’invite au ${D.cinema.name}, ${D.jour}.\n` +
-    `Choisis tes films parmi les ${n} à l’affiche (bandes-annonces comprises) et dis à partir de quelle heure tu es dispo. Tu verras ce que les autres ont déjà choisi, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n\n👉 ${groupLink()}`;
+    `Choisis tes films parmi les ${n} à l’affiche (bandes-annonces comprises), puis valide : tu verras ce que les autres ont choisi, et Pot’corn trouve le film qui met tout le monde d’accord. Pas besoin de compte.\n\n👉 ${groupLink()}`;
   return 'https://wa.me/?text=' + encodeURIComponent(txt);
 }
 function decisionHref() {
@@ -849,97 +1010,6 @@ function gDecHTML() {
     ${book ? `<a class="big ink" href="${book}" target="_blank" rel="noopener">Réserver ma place</a>` : ''}
     <a class="big cream" href="${decisionHref()}" target="_blank" rel="noopener">${ICON.send} Prévenir le groupe sur WhatsApp</a>
     ${isCreator() && !ended() ? '<button class="linkbtn" data-act="gundecide">Changer d’avis</button>' : ''}</div>`;
-}
-
-/* Étape 1 : rejoindre (prénom + heure de dispo) */
-function dispoOpts() {
-  const now = gToday() ? nowMin() : 0;
-  const o = [{ v: now, l: now ? 'Dès maintenant' : 'Peu importe l’heure' }];
-  for (const h of [840, 960, 1020, 1080, 1140, 1200, 1260, 1320]) if (h > now + 15) o.push({ v: h, l: 'Dès ' + hm(h) });
-  return o;
-}
-function gJoinHTML() {
-  const D = G.doc, opts = dispoOpts(), others = potesList().length;
-  if (G.jdispo == null || !opts.some(o => o.v === G.jdispo)) G.jdispo = opts[0].v;
-  if (G.jprenom == null) G.jprenom = S.prenom;
-  return `<div class="dark gbody">
-    <p class="msg">${isCreator() ? 'Ta séance est prête ! Dis à partir de quelle heure tu es dispo, puis invite tes potes avec le bouton « Inviter ».'
-      : `<b style="color:#fff">${esc(D.auteur)}</b> t’invite à choisir le film${others > 1 ? ` avec ${others} potes` : ''}. Garde ou élimine les films à l’affiche, à partir de l’heure qui te va. Sur chaque carte, tu verras qui l’a déjà gardé.`}</p>
-    <label class="field">Ton prénom<input id="g-prenom" type="text" maxlength="30" autocomplete="given-name" value="${esc(G.jprenom)}" placeholder="Ex. : Julie"></label>
-    <div class="lbl2">Tu es dispo à partir de quelle heure ?</div>
-    <div class="dchips">${opts.map(o => `<button class="dchip ${o.v === G.jdispo ? 'on' : ''}" data-act="gdispo" data-v="${o.v}" aria-pressed="${o.v === G.jdispo}">${o.l}</button>`).join('')}</div>
-    <button class="big or" data-act="gjoin">C’est parti, je choisis mes films</button>
-    <p class="msg" style="font-size:12px;text-align:center">${D.films.length} film${D.films.length > 1 ? 's' : ''} à l’affiche · pas besoin de compte</p>
-    <div id="gjoinx">${gJoinOthersHTML()}</div></div>`;
-}
-/* Mis à jour en direct sur l'écran d'accueil de l'invité (sans toucher au champ prénom) */
-function gJoinOthersHTML() {
-  const done = potesList().filter(p => (p.kept || []).length);
-  return done.length ? `<button class="ghost" data-act="gstep" data-v="res">Voir ce que ${done.length > 1 ? 'les autres ont' : esc(done[0].prenom) + ' a'} déjà choisi</button>` : '';
-}
-async function gJoin(btn) {
-  const prenom = String(G.jprenom || '').trim();
-  if (!prenom) { toast('Écris ton prénom'); document.getElementById('g-prenom')?.focus(); return; }
-  S.prenom = prenom; store.set('cine:prenom', prenom);
-  G.me = { prenom, dispo: G.jdispo, kept: [], removed: [], coeur: null, done: false };
-  const none = !deckFor(G.me.dispo).length;
-  if (none) G.me.done = true;
-  btn.disabled = true; btn.textContent = 'Un instant…';
-  try { await saveMe(); }
-  catch (e) { console.error(e); G.me = null; toast('Impossible de rejoindre la séance. Réessaie.'); btn.disabled = false; btn.textContent = 'C’est parti, je choisis mes films'; return; }
-  if (none) toast('Aucun film n’a de séance à cette heure-là');
-  G.step = none ? 'res' : 'swipe'; renderGroup();
-}
-
-/* Étape 2 : glisser les cartes */
-/* Mes films restants : ceux déjà gardés par les autres d'abord (les plus demandés en tête) */
-function gDeck() {
-  const M = G.me, seen = new Set([...M.kept, ...M.removed]);
-  const others = potesList().filter(p => p.uid !== G.uid);
-  const score = f => others.reduce((s, p) => s + ((p.kept || []).includes(f.id) ? 1 : 0) + (p.coeur === f.id ? 1 : 0), 0);
-  const all = deckFor(M.dispo);
-  const rest = all.filter(f => !seen.has(f.id)).map((f, i) => ({ f, i, s: score(f) }))
-    .sort((a, b) => b.s - a.s || a.i - b.i).map(x => x.f);
-  return { all, rest };
-}
-function othersHTML(f) {
-  const fans = potesList().filter(p => p.uid !== G.uid && (p.kept || []).includes(f.id));
-  if (!fans.length) return '';
-  const c = fans.filter(p => p.coeur === f.id).map(p => esc(p.prenom));
-  return `<div class="others">${ICON.oks} Gardé par ${fans.map(p => esc(p.prenom)).join(', ')}${c.length ? ` · ${ICON.hs} coup de cœur de ${c.join(', ')}` : ''}</div>`;
-}
-function gSwipeHTML() {
-  const M = G.me, { all, rest } = gDeck();
-  if (!rest.length) { M.done = true; G.step = 'res'; saveSoon(); return gResHTML(); }
-  const ctx = { group: true, playing: G.playing, date: new Date(G.doc.jourISO + 'T00:00:00'), others: othersHTML };
-  const num = all.length - rest.length + 1, top = rest[0], next = rest[1];
-  return `<div class="gprog"><span>Film ${num} sur ${all.length}${M.coeur ? ` · ${ICON.hs} coup de cœur donné` : ''}</span>
-      <button class="linkbtn" data-act="gstep" data-v="res">Résultats ›</button></div>
-    <div class="stage cards">${next ? cardHTML(next, num + 1, all.length, false, ctx) : ''}${cardHTML(top, num, all.length, true, ctx)}</div>
-    ${underBar(G.hist.length > 0, 'gundo', 'gfinish', 'J’ai fini mes choix')}`;
-}
-function gDecide(dir) {
-  flyOut(dir, id => {
-    const M = G.me, prev = M.coeur || null; _swipes++;
-    M.kept = M.kept.filter(x => x !== id); M.removed = M.removed.filter(x => x !== id);
-    (dir === 'nope' ? M.removed : M.kept).push(id);
-    if (dir === 'coeur') {
-      if (prev && prev !== id) toast(`Ton coup de cœur passe de « ${(filmById(prev) || {}).t || '?'} » à celui-ci`);
-      M.coeur = id;
-    }
-    G.hist.push({ id, prev }); G.playing = null;
-    const left = deckFor(M.dispo).filter(f => !M.kept.includes(f.id) && !M.removed.includes(f.id)).length;
-    if (!left) { M.done = true; G.step = 'res'; }
-    saveSoon(); renderGroup();
-    if (!left) window.scrollTo(0, 0);
-  });
-}
-function gUndo() {
-  const h = G.hist.pop(); if (!h) return;
-  const M = G.me;
-  M.kept = M.kept.filter(x => x !== h.id); M.removed = M.removed.filter(x => x !== h.id);
-  M.coeur = h.prev; M.done = false; G.playing = null; G.step = 'swipe';
-  saveSoon(); renderGroup();
 }
 
 /* Étape 3 : résultats */
@@ -971,51 +1041,51 @@ function rCardHTML(r, n, isMatch) {
 }
 function gResHTML() {
   const R = gResults(), { P, n } = R, dc = G.doc.decision, rl = G.doc.roulette;
-  const waiting = P.filter(p => !p.done).map(p => esc(p.prenom) + (p.uid === G.uid ? ' (toi)' : ''));
-  let h = '';
-  if (n <= 1) h += `<p class="msg">${G.me ? 'Tu es seul pour l’instant : invite tes potes pour trouver le film commun.' : 'Personne n’a encore choisi.'}</p>` +
-    (G.me && !ended() ? `<a class="big or" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter mes potes sur WhatsApp</a>` : '');
-  else h += `<p class="msg">Séances qui vont à tout le monde : <b style="color:#fff">${esc(fromText(R.common))}</b>${waiting.length ? `<br>Encore en train de choisir : ${waiting.join(', ')}` : '<br>Tout le monde a fini !'}</p>`;
+  let h = `<div class="potes">${P.map((p, i) => `<span class="pote done"><span class="av" style="background:${AVC[i % AVC.length]}">${initial(p.prenom)}</span>${esc(p.prenom)}${p.uid === G.uid ? ' (toi)' : ''}
+      <small>${(p.kept || []).length} film${(p.kept || []).length > 1 ? 's' : ''}</small></span>`).join('')}</div>`;
+  if (n <= 1) h += `<div class="waitcard"><b>En attente des réponses de tes potes…</b>
+      <span>Les résultats évoluent ici à chaque fois qu’un pote valide ses choix.</span>
+      ${!ended() ? `<a class="big or" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter mes potes sur WhatsApp</a>` : ''}</div>`;
+  else h += `<p class="msg">${n} potes ont répondu : les résultats évoluent à chaque nouvelle réponse.<br>Séances qui vont à tout le monde : <b style="color:#fff">${esc(fromText(R.common))}</b></p>`;
 
   if (R.matches.length) h += `<div class="sec"><h2>Match ! <span class="tag">TOUT LE MONDE PARTANT</span></h2>${R.matches.map(r => rCardHTML(r, n, true)).join('')}</div>`;
   else if (n >= 2 && R.rows.length) h += `<p class="msg">Pas encore de film qui plaît à tout le monde. Voici ceux qui s’en approchent :</p>`;
-
-  if (!dc && R.tied.length >= 2 && G.me && !ended()) {
+  if (!dc && R.tied.length >= 2 && G.joined && !ended()) {
     h += `<button class="big cream" data-act="groulette">🎲 ${rl ? 'Relancer la roulette' : 'Départager à la roulette'} (${R.tied.length} films à égalité)</button>`;
   }
-  if (R.rest.length) h += `<div class="sec"><h2>${R.matches.length ? 'Presque' : n <= 1 ? 'Films gardés' : 'Les plus demandés'}</h2>${R.rest.map(r => rCardHTML(r, n, false)).join('')}</div>`;
+  if (R.rest.length) h += `<div class="sec"><h2>${R.matches.length ? 'Presque' : n <= 1 ? 'Les films gardés' : 'Les plus demandés'}</h2>${R.rest.map(r => rCardHTML(r, n, false)).join('')}</div>`;
   if (!R.rows.length && n >= 1) h += `<p class="msg">Aucun film gardé pour le moment.</p>`;
   if (!isCreator() && !dc && R.rows.length) h += `<p class="msg" style="font-size:12px">C’est ${esc(G.doc.auteur)} qui validera le choix final.</p>`;
 
-  if (P.length) h += `<div class="sec"><h2>Les choix de chacun</h2>${P.map((p, i) => {
+  if (n >= 2) h += `<div class="sec"><h2>Les choix de chacun</h2>${P.map((p, i) => {
     const kept = (p.kept || []).filter(id => id !== p.coeur).map(id => (filmById(id) || {}).t).filter(Boolean);
     return `<div class="pcard"><div class="ph"><span class="av" style="background:${AVC[i % AVC.length]}">${initial(p.prenom)}</span>${esc(p.prenom)}${p.uid === G.uid ? ' (toi)' : ''}
-        ${p.uid === G.doc.creator ? '<span class="tag or">ORGANISE</span>' : ''}<small>${p.done ? 'a fini' : 'choisit encore…'} · dispo ${esc(fromText(p.dispo))}</small></div>
-      <div class="pl">${p.coeur && filmById(p.coeur) ? `${ICON.hs} <b>${esc(filmById(p.coeur).t)}</b>${kept.length ? '<br>' : ''}` : ''}${kept.length ? kept.map(esc).join(' · ') : p.coeur ? '' : 'Aucun film gardé pour l’instant'}</div></div>`;
+        ${p.uid === G.doc.creator ? '<span class="tag or">ORGANISE</span>' : ''}<small>dispo ${esc(fromText(p.dispo))}</small></div>
+      <div class="pl">${p.coeur && filmById(p.coeur) ? `${ICON.hs} <b>${esc(filmById(p.coeur).t)}</b>${kept.length ? '<br>' : ''}` : ''}${kept.length ? kept.map(esc).join(' · ') : p.coeur ? '' : 'Aucun film gardé'}</div></div>`;
   }).join('')}</div>`;
 
   if (!ended()) {
-    if (!G.me) h += `<button class="big or" data-act="gstep" data-v="join">Participer à la séance</button>`;
-    else if (!G.me.done) h += `<button class="big or" data-act="gstep" data-v="swipe">Continuer à choisir</button>`;
-    else { const left = gDeck().rest.length; if (left) h += `<button class="big cream" data-act="gmore">Voir les ${left} film${left > 1 ? 's' : ''} que je n’ai pas vus</button>`; }
-    if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes sur WhatsApp</a>`;
-    if (G.me && G.me.done) h += `<button class="ghost" data-act="greset">Refaire mes choix</button>`;
+    if (n > 1) h += `<a class="gbtn" href="${inviteHref()}" target="_blank" rel="noopener">${ICON.send} Inviter d’autres potes</a>`;
   } else h += `<p class="msg">Cette séance est passée.</p>`;
   h += `<a class="ghost" style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff" href="${base()}">Voir toutes les séances</a>`;
   return h;
 }
 
-/* E : l organisateur valide le film et la séance */
+/* Feuilles du mode entre potes : validation, et choix final de l'organisateur */
 function gSheetHTML() {
   if (!G.sheet) return '';
-  const r = gResults().rows.find(x => x.f.id === G.sheet); if (!r) { G.sheet = null; return ''; }
-  const body = `<h2>C’est décidé ?</h2>
-    <p class="note"><b>${esc(r.f.t)}</b> · ${esc(G.doc.jour)}<br>Choisis la séance : tout le groupe verra le choix, avec le lien pour réserver.</p>` +
-    r.seas.map((x, i) => `<button class="opt" data-act="gdecideok" data-v="${i}"><span>${esc(lab(x))}</span><small>${x.book ? 'réservation en ligne' : ''}</small></button>`).join('');
+  let body = '';
+  if (G.sheet === 'valid') body = validSheetBody(true);
+  else {
+    const r = gResults().rows.find(x => x.f.id === G.sheet.slice(2)); if (!r) { G.sheet = null; return ''; }
+    body = `<h2>C’est décidé ?</h2>
+      <p class="note"><b>${esc(r.f.t)}</b> · ${esc(G.doc.jour)}<br>Choisis la séance : tout le groupe verra le choix, avec le lien pour réserver.</p>` +
+      r.seas.map((x, i) => `<button class="opt" data-act="gdecideok" data-v="${i}"><span>${esc(lab(x))}</span><small>${x.book ? 'réservation en ligne' : ''}</small></button>`).join('');
+  }
   return `<div class="sheetbg" data-act="close"></div><div class="sheet" role="dialog" aria-modal="true"><span class="grip"></span>${body}</div>`;
 }
 async function gSetDecision(i) {
-  const r = gResults().rows.find(x => x.f.id === G.sheet); const x = r && r.seas[i]; if (!x) return;
+  const r = gResults().rows.find(x => x.f.id === String(G.sheet || '').slice(2)); const x = r && r.seas[i]; if (!x) return;
   G.sheet = null;
   try {
     const fb = await getFB();
@@ -1047,8 +1117,8 @@ function playRoulette(r) {
     <button class="big or" data-act="roulclose" style="visibility:hidden;max-width:320px">Super !</button>`;
   document.body.appendChild(o);
   const rt = o.querySelector('.rt'), seq = [];
-  let k = Math.floor(Math.random() * titles.length);
-  for (let s = 0; s < 21; s++) { let t = titles[(k + s) % titles.length]; seq.push(t); }
+  const k = Math.floor(Math.random() * titles.length);
+  for (let s = 0; s < 21; s++) seq.push(titles[(k + s) % titles.length]);
   if (seq[seq.length - 1] === win) seq.push(titles.find(t => t !== win));
   seq.push(win);
   let i = 0;
@@ -1070,58 +1140,67 @@ function render() {
   if (G.on) return renderGroup();
   if (V.on) return renderShared();
   if (!DATA[S.cin]) { loadCinema(S.cin); return; }
-  if (S.view === 'sel') renderSel(); else renderDeck();
+  renderHome();
+}
+function switchTab(v) {
+  if (G.on) {
+    if (v === 'res' && !G.joined && !ended()) { toast('Valide d’abord tes choix pour voir les résultats'); v = 'sel'; }
+    G.tab = v; G.playing = null; G.sheet = null; renderGroup();
+  } else {
+    if (v === 'res') { toast('Les résultats s’ouvrent quand tu as validé tes choix et invité tes potes'); v = 'sel'; }
+    S.tab = v; S.playing = null; S.sheet = null; render();
+  }
+  window.scrollTo(0, 0);
 }
 document.addEventListener('input', e => {
   if (e.target.id === 'f-prenom') S.prenom = e.target.value;
   if (e.target.id === 'f-mot') S.mot = e.target.value;
   if (e.target.id === 'f-prenom' || e.target.id === 'f-mot') { const pv = document.getElementById('f-preview'); if (pv) pv.textContent = buildMsg(payload(), '[lien]'); }
-  if (e.target.id === 'g-prenom') G.jprenom = e.target.value;
+  if (e.target.id === 'v-prenom') VAL.prenom = e.target.value;
 });
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return;
   const v = b.dataset.v;
   switch (b.dataset.act) {
+    case 'tab': switchTab(v); break;
     case 'sheet': S.sheet = v; render(); break;
     case 'close': if (G.on) G.sheet = null; else S.sheet = null; render(); break;
-    case 'go': S.view = v; S.sheet = null; S.playing = null; render(); break;
-    case 'setcin': S.cin = v; store.set('cine:cin', v); S.sheet = null; S.playing = null; render(); break;
-    case 'setday': S.day = Number(v); if (S.day !== 0 && S.hour === -1) S.hour = 0; S.sheet = null; S.playing = null; render(); break;
-    case 'sethour': S.hour = Number(v); S.sheet = null; S.playing = null; render(); break;
+    /* Réglages : le panneau reste ouvert, la liste se met à jour derrière */
+    case 'setcin': S.cin = v; store.set('cine:cin', v); S.playing = null; S.tab = 'films'; render(); break;
+    case 'setday': S.day = Number(v); if (S.day !== 0 && S.hour === -1) S.hour = 0; S.playing = null; S.tab = 'films'; render(); break;
+    case 'sethour': S.hour = Number(v); S.playing = null; S.tab = 'films'; render(); break;
     case 'nextday': S.day = Math.min(S.day + 1, LIMIT); if (S.hour === -1) S.hour = 0; render(); break;
     case 'allday': S.hour = 0; render(); break;
     case 'decide': decide(v); break;
     case 'undo': undo(); break;
+    case 'finish': switchTab('sel'); break;
     case 'stop': if (G.on) G.playing = null; else S.playing = null; render(); break;
-    case 'reset': saveList({ kept: [], removed: [], hist: [] }); render(); break;
+    case 'reset': saveList({ kept: [], removed: [], hist: [] }); S.tab = 'films'; render(); break;
     case 'unkeep': { const L = getList(); L.kept = L.kept.filter(x => x !== v); L.removed.push(v); if (L.coeur === v) L.coeur = null; saveList(L); render(); break; }
-    case 'finish': S.view = 'sel'; S.playing = null; render(); window.scrollTo(0, 0); break;
     case 'rekeep': { const L = getList(); L.removed = L.removed.filter(x => x !== v); L.kept.push(v); saveList(L); render(); break; }
-    case 'toggleRemoved': S.showRemoved = !S.showRemoved; render(); break;
+    case 'toggleRemoved': if (G.on) { G.showRemoved = !G.showRemoved; renderGroup(); } else { S.showRemoved = !S.showRemoved; render(); } break;
     case 'share': share(); break;
     case 'video': showVideo(v); break;
     case 'retry': loadCinema(S.cin, true); break;
-    case 'closevideo': b.closest('.vid')?.remove(); if (G.on && G.step === 'res') onGroupChange(); break;
+    case 'closevideo': b.closest('.vid')?.remove(); if (G.on && G.tab === 'res') onGroupChange(); break;
+    /* Validation (prénom + heure) */
+    case 'valid': VAL.dispo = null; if (G.on) { G.sheet = 'valid'; renderGroup(); } else { S.sheet = 'valid'; render(); } break;
+    case 'vdispo': VAL.dispo = Number(v); document.querySelectorAll('[data-act=vdispo]').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); break;
+    case 'validok': if (G.on) gValidate(b); else createGroup(b); break;
     /* Séance entre potes */
-    case 'gcreate': createGroup(b); break;
-    case 'gdispo': G.jdispo = Number(v); document.querySelectorAll('.dchip').forEach(c => { const on = c === b; c.classList.toggle('on', on); c.setAttribute('aria-pressed', on); }); break;
-    case 'gjoin': gJoin(b); break;
     case 'gdecide': gDecide(v); break;
     case 'gundo': gUndo(); break;
-    case 'gfinish':
-      if (!G.me) break;
-      G.me.done = true; G.step = 'res'; G.playing = null; saveSoon(); renderGroup(); window.scrollTo(0, 0); break;
-    case 'gmore':
-      if (!G.me) break;
-      G.me.done = false; G.step = 'swipe'; saveSoon(); renderGroup(); window.scrollTo(0, 0); break;
-    case 'gstep':
-      if (v === 'swipe' && !G.me) break;
-      G.step = v; G.playing = null; renderGroup(); window.scrollTo(0, 0); break;
+    case 'gfinish': switchTab('sel'); break;
+    case 'gunkeep': { const M = G.me; M.kept = M.kept.filter(x => x !== v); M.removed.push(v); if (M.coeur === v) M.coeur = null; saveMine(); renderGroup(); break; }
+    case 'grekeep': { const M = G.me; M.removed = M.removed.filter(x => x !== v); M.kept.push(v); saveMine(); renderGroup(); break; }
     case 'greset':
       if (!G.me || !confirmReset()) break;
-      Object.assign(G.me, { kept: [], removed: [], coeur: null, done: false }); G.hist = [];
-      saveSoon(); G.step = 'swipe'; renderGroup(); window.scrollTo(0, 0); break;
-    case 'gsheet': G.sheet = v; renderGroup(); break;
+      Object.assign(G.me, { kept: [], removed: [], coeur: null }); G.hist = [];
+      saveMine(); G.tab = 'films'; renderGroup(); window.scrollTo(0, 0); break;
+    case 'copylink':
+      (navigator.clipboard ? navigator.clipboard.writeText(groupLink()) : Promise.reject()).then(() => toast('Lien copié : colle-le où tu veux'), () => toast(groupLink()));
+      break;
+    case 'gsheet': G.sheet = 'd:' + v; renderGroup(); break;
     case 'gdecideok': gSetDecision(Number(v)); break;
     case 'gundecide': gUndecide(); break;
     case 'groulette': spinRoulette(); break;
@@ -1139,7 +1218,7 @@ document.addEventListener('keydown', e => {
   const arrows = { ArrowLeft: 'nope', ArrowRight: 'keep', ArrowUp: 'coeur' };
   if (arrows[e.key] && !e.target.closest('input,textarea') && document.querySelector('.card.front') && !document.querySelector('.sheet, .vid, .roul')) {
     e.preventDefault();
-    if (G.on) { if (G.step === 'swipe') gDecide(arrows[e.key]); } else if (S.view === 'deck') decide(arrows[e.key]);
+    if (G.on) { if (G.tab === 'films') gDecide(arrows[e.key]); } else if (S.tab === 'films') decide(arrows[e.key]);
     return;
   }
   if (e.key !== 'Escape') return;
