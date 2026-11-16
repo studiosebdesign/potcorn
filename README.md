@@ -18,3 +18,4 @@ Test : `/api/seances?cinema=B1139&debug=1`
 - `functions/api/seances.js` : si TMDB ne trouve pas de bande-annonce, recherche YouTube « titre bande annonce année » quand la variable secrète `YOUTUBE_KEY` est réglée (facultatif).
 - `public/manifest.webmanifest` et `public/icons/` : Pot'corn s'installe sur l'écran d'accueil.
 - `public/confidentialite.html` : page de confidentialité.
+- `public/og-image.jpg` : l'image d'aperçu affichée quand on partage un lien Pot'corn (WhatsApp, Messenger…).
